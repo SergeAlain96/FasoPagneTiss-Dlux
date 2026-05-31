@@ -2,8 +2,6 @@ const STORAGE_PRODUCTS = 'faspagnes_products_v2';
 const STORAGE_ORDERS = 'faspagnes_orders_v2';
 const ORDER_EMAIL = 'contact@fasopagnes.bf';
 const SELLER_WHATSAPP = '22663240663';
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'Faso2026!';
 const IMGBB_API_KEY = '3693b780e2a691fdbad5f3bda9fcf716';
 const FIREBASE_CONFIG = globalThis.FASOPAGNES_FIREBASE_CONFIG || null;
 const APP_STATE = {
@@ -14,8 +12,11 @@ const APP_STATE = {
 const FIREBASE_STATE = {
   enabled: false,
   db: null,
+  auth: null,
   storage: null,
 };
+// Désabonnements des écoutes temps réel (orders réservé à l'admin connecté)
+let UNSUBSCRIBE_ORDERS = null;
 let LAST_UPLOADED_IMAGE_URL = '';
 let CURRENT_PRODUCT_IMAGE_URL = '';
 let SELECTED_PRODUCT_UPLOAD_FILE = null;
@@ -84,6 +85,16 @@ async function initFirebase() {
 
   FIREBASE_STATE.db = globalThis.firebase.firestore();
 
+  // Init Firebase Authentication (connexion admin réelle, gérée côté serveur)
+  if (globalThis.firebase.auth) {
+    try {
+      FIREBASE_STATE.auth = globalThis.firebase.auth();
+      console.log('[Firebase] ✓ Auth connecté');
+    } catch (e) {
+      console.warn('[Firebase] Auth non disponible :', e);
+    }
+  }
+
   // Init Firebase Storage
   if (globalThis.firebase.storage) {
     try {
@@ -98,14 +109,41 @@ async function initFirebase() {
   console.log('[Firebase] ✓ Connected to Firestore');
 }
 
-function productsDocRef() {
+/* ── Références Firestore ──
+   Nouveau modèle : une collection par entité (1 document = 1 produit / 1 commande).
+   Les références "legacy" pointent vers l'ancien format (document unique) et ne
+   servent plus qu'à la migration et au repli lecture-seule pendant la transition. */
+function productsCollection() {
+  if (!FIREBASE_STATE.enabled || !FIREBASE_STATE.db) return null;
+  return FIREBASE_STATE.db.collection('products');
+}
+
+function ordersCollection() {
+  if (!FIREBASE_STATE.enabled || !FIREBASE_STATE.db) return null;
+  return FIREBASE_STATE.db.collection('orders');
+}
+
+function legacyProductsDocRef() {
   if (!FIREBASE_STATE.enabled || !FIREBASE_STATE.db) return null;
   return FIREBASE_STATE.db.collection('fasopagnes').doc('products');
 }
 
-function ordersDocRef() {
+function legacyOrdersDocRef() {
   if (!FIREBASE_STATE.enabled || !FIREBASE_STATE.db) return null;
   return FIREBASE_STATE.db.collection('fasopagnes').doc('orders');
+}
+
+function isAdminAuthenticated() {
+  return Boolean(FIREBASE_STATE.auth?.currentUser);
+}
+
+// Tri produits : plus récents d'abord (ceux sans date passent à la fin)
+function sortByCreatedDesc(items) {
+  return [...items].sort((a, b) => {
+    const ad = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bd = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bd - ad;
+  });
 }
 
 function getUploadElements() {
@@ -256,97 +294,119 @@ function getOrders() {
   return APP_STATE.orders.length ? APP_STATE.orders : loadLocalOrders();
 }
 
-function saveProducts(products) {
-  APP_STATE.products = [...products];
-  saveLocalProducts(APP_STATE.products);
-  if (FIREBASE_STATE.enabled) {
-    void syncProductsToFirebase().catch(() => {});
-  }
-}
-
-function saveOrders(orders) {
-  APP_STATE.orders = [...orders];
-  saveLocalOrders(APP_STATE.orders);
-  if (FIREBASE_STATE.enabled) {
-    void syncOrdersToFirebase().catch(() => {});
-  }
-}
-
 async function loadProductsFromApi() {
-  const localProducts = loadLocalProducts();
-  APP_STATE.products = localProducts;
+  APP_STATE.products = loadLocalProducts();
+  const col = productsCollection();
+  if (!col) return;
 
-  if (FIREBASE_STATE.enabled) {
-    const ref = productsDocRef();
-    const snap = ref ? await ref.get() : null;
-    const items = Array.isArray(snap?.data()?.items) ? snap.data().items : [];
-    if (items.length) {
-      APP_STATE.products = items;
-    } else if (localProducts.length) {
-      await syncProductsToFirebase();
+  try {
+    const snap = await col.get();
+    let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Repli : tant que la nouvelle collection est vide, on lit l'ancien format
+    // (lecture seule) pour que le site public reste affiché avant la migration.
+    if (!items.length) {
+      const legacy = await legacyProductsDocRef().get().catch(() => null);
+      const legacyItems = Array.isArray(legacy?.data()?.items) ? legacy.data().items : [];
+      items = legacyItems.map(it => ({ ...it, id: it.id || uid() }));
     }
-  }
 
-  saveLocalProducts(APP_STATE.products.length ? APP_STATE.products : [...DEFAULT_PRODUCTS]);
-  if (!APP_STATE.products.length) APP_STATE.products = [...DEFAULT_PRODUCTS];
+    APP_STATE.products = sortByCreatedDesc(items);
+    saveLocalProducts(APP_STATE.products);
+  } catch (e) {
+    console.warn('[Firebase] Lecture produits impossible :', e);
+  }
 }
 
 async function loadOrdersFromApi() {
-  const localOrders = loadLocalOrders();
-  APP_STATE.orders = localOrders;
+  APP_STATE.orders = loadLocalOrders();
+  const col = ordersCollection();
+  // Les commandes ne sont lisibles que par l'admin connecté (règles Firestore).
+  if (!col || !isAdminAuthenticated()) return;
 
-  if (FIREBASE_STATE.enabled) {
-    const ref = ordersDocRef();
-    const snap = ref ? await ref.get() : null;
-    const items = Array.isArray(snap?.data()?.items) ? snap.data().items : [];
-    if (items.length || localOrders.length === 0) {
-      APP_STATE.orders = items;
-    } else {
-      await syncOrdersToFirebase();
-    }
+  try {
+    const snap = await col.get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    APP_STATE.orders = items.sort((a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    saveLocalOrders(APP_STATE.orders);
+  } catch (e) {
+    console.warn('[Firebase] Lecture commandes impossible :', e);
   }
-
-  saveLocalOrders(APP_STATE.orders);
 }
 
 async function loadCustomersFromApi() {
   refreshCustomersFromOrders();
 }
 
-async function createOrderOnServer(_order) {
-  return syncOrdersToFirebase();
+/* ── Écritures Firestore (un document par produit / commande) ── */
+async function saveProductToFirebase(product) {
+  const col = productsCollection();
+  if (!col) return;
+  await col.doc(product.id).set(product, { merge: true });
 }
 
-async function updateOrderOnServer(_orderId, _status) {
-  return syncOrdersToFirebase();
+async function deleteProductFromFirebase(productId) {
+  const col = productsCollection();
+  if (!col) return;
+  await col.doc(productId).delete();
 }
 
-async function deleteOrderOnServer(_orderId) {
-  return syncOrdersToFirebase();
+async function saveOrderToFirebase(order) {
+  const col = ordersCollection();
+  if (!col) return;
+  await col.doc(order.id).set(order, { merge: true });
 }
 
-async function loginAdminOnServer(username, password) {
-  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
-    throw new Error('Identifiants invalides.');
+async function updateOrderStatusInFirebase(orderId, status) {
+  const col = ordersCollection();
+  if (!col) return;
+  await col.doc(orderId).set({ status, updatedAt: new Date().toISOString() }, { merge: true });
+}
+
+async function deleteOrderFromFirebase(orderId) {
+  const col = ordersCollection();
+  if (!col) return;
+  await col.doc(orderId).delete();
+}
+
+/* ── Migration ancien format (document unique) -> collections ──
+   Exécutée à la connexion admin. Ne supprime pas l'ancien document : il reste
+   comme sauvegarde de sécurité. Ne migre que si la collection cible est vide. */
+async function migrateLegacyData() {
+  if (!FIREBASE_STATE.enabled || !isAdminAuthenticated()) return;
+
+  const prodCol = productsCollection();
+  const prodSnap = prodCol ? await prodCol.limit(1).get().catch(() => null) : null;
+  if (prodSnap && prodSnap.empty) {
+    const legacy = await legacyProductsDocRef().get().catch(() => null);
+    const items = Array.isArray(legacy?.data()?.items) ? legacy.data().items : [];
+    if (items.length) {
+      const batch = FIREBASE_STATE.db.batch();
+      items.forEach(it => {
+        const id = it.id || uid();
+        batch.set(prodCol.doc(id), { ...it, id, createdAt: it.createdAt || new Date().toISOString() });
+      });
+      await batch.commit().catch(e => console.warn('[Migration] produits :', e));
+      console.log(`[Migration] ${items.length} produit(s) migré(s)`);
+    }
   }
-}
 
-async function logoutAdminOnServer() {
-  return;
-}
-
-async function syncProductsToFirebase() {
-  if (!FIREBASE_STATE.enabled) return;
-  const ref = productsDocRef();
-  if (!ref) return;
-  await ref.set({ items: APP_STATE.products, updatedAt: new Date().toISOString() }, { merge: true });
-}
-
-async function syncOrdersToFirebase() {
-  if (!FIREBASE_STATE.enabled) return;
-  const ref = ordersDocRef();
-  if (!ref) return;
-  await ref.set({ items: APP_STATE.orders, updatedAt: new Date().toISOString() }, { merge: true });
+  const ordCol = ordersCollection();
+  const ordSnap = ordCol ? await ordCol.limit(1).get().catch(() => null) : null;
+  if (ordSnap && ordSnap.empty) {
+    const legacy = await legacyOrdersDocRef().get().catch(() => null);
+    const items = Array.isArray(legacy?.data()?.items) ? legacy.data().items : [];
+    if (items.length) {
+      const batch = FIREBASE_STATE.db.batch();
+      items.forEach(it => {
+        const id = it.id || uid();
+        batch.set(ordCol.doc(id), { ...it, id });
+      });
+      await batch.commit().catch(e => console.warn('[Migration] commandes :', e));
+      console.log(`[Migration] ${items.length} commande(s) migrée(s)`);
+    }
+  }
 }
 
 function refreshCustomersFromOrders() {
@@ -445,11 +505,6 @@ function bindProductImageDropzone() {
   updateProductImagePreview('');
 }
 
-function seedDefaults() {
-  saveProducts([...DEFAULT_PRODUCTS]);
-  saveOrders([]);
-  refreshAll();
-}
 
 function refreshOrderSelect(selectedId) {
   const select = document.getElementById('order-pagne');
@@ -602,7 +657,6 @@ async function submitVisitorOrder() {
     return;
   }
 
-  const orders = getOrders();
   const order = {
     id: uid(),
     clientName: name,
@@ -613,12 +667,15 @@ async function submitVisitorOrder() {
     createdAt: new Date().toISOString(),
   };
 
+  // Cache local + écriture du document de commande (création autorisée pour tous)
+  const orders = getOrders();
   orders.unshift(order);
-  saveOrders(orders);
+  APP_STATE.orders = orders;
+  saveLocalOrders(orders);
   refreshCustomersFromOrders();
   renderAdminOrders();
   renderAdminCustomers();
-  createOrderOnServer(order).catch(() => {});
+  saveOrderToFirebase(order).catch(e => console.warn('[Commande] enregistrement Firestore :', e));
 
   alert('Commande enregistrée. Vous pouvez maintenant l’envoyer via WhatsApp.');
   prefillOrderWhatsApp(order);
@@ -777,12 +834,14 @@ function exportCustomersCsv() {
 async function setOrderStatus(index, status) {
   const orders = getOrders();
   if (!orders[index]) return;
+  const orderId = orders[index].id;
   orders[index].status = status;
-  saveOrders(orders);
+  APP_STATE.orders = orders;
+  saveLocalOrders(orders);
   refreshCustomersFromOrders();
   renderAdminOrders();
   renderAdminCustomers();
-  updateOrderOnServer(orders[index].id, status).catch(() => {});
+  updateOrderStatusInFirebase(orderId, status).catch(e => console.warn('[Commande] maj statut :', e));
 }
 
 async function deleteOrder(index) {
@@ -791,11 +850,12 @@ async function deleteOrder(index) {
   if (!confirm('Supprimer cette commande ?')) return;
   const orderId = orders[index].id;
   orders.splice(index, 1);
-  saveOrders(orders);
+  APP_STATE.orders = orders;
+  saveLocalOrders(orders);
   refreshCustomersFromOrders();
   renderAdminOrders();
   renderAdminCustomers();
-  deleteOrderOnServer(orderId).catch(() => {});
+  deleteOrderFromFirebase(orderId).catch(e => console.warn('[Commande] suppression :', e));
 }
 
 function openProductForm(index) {
@@ -883,10 +943,21 @@ function saveProduct() {
 
   const products = getProducts();
   const isEditing = editIndex.length > 0;
-  const payload = { id: isEditing ? products[Number(editIndex)].id : uid(), name, type, price, image, desc };
+  const existing = isEditing ? products[Number(editIndex)] : null;
+  const payload = {
+    id: existing ? existing.id : uid(),
+    name, type, price, image, desc,
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
   if (isEditing) products[Number(editIndex)] = payload;
   else products.unshift(payload);
-  saveProducts(products);
+  APP_STATE.products = products;
+  saveLocalProducts(products);
+  saveProductToFirebase(payload).catch(e => {
+    console.warn('[Pagne] enregistrement Firestore :', e);
+    alert('Le pagne a été enregistré localement mais la sauvegarde en ligne a échoué. Vérifiez votre connexion et que vous êtes bien connecté en admin.');
+  });
   closeProductForm();
   refreshAll();
   showSection('admin');
@@ -897,34 +968,51 @@ function deleteProduct(index) {
   const products = getProducts();
   if (!products[index]) return;
   if (!confirm('Supprimer ce pagne ?')) return;
+  const productId = products[index].id;
   products.splice(index, 1);
-  saveProducts(products);
+  APP_STATE.products = products;
+  saveLocalProducts(products);
+  deleteProductFromFirebase(productId).catch(e => console.warn('[Pagne] suppression :', e));
   refreshAll();
 }
 
+function authErrorMessage(error) {
+  const code = error?.code || '';
+  if (code === 'auth/invalid-email') return 'Adresse email invalide.';
+  if (code === 'auth/user-disabled') return 'Ce compte est désactivé.';
+  if (['auth/user-not-found', 'auth/wrong-password', 'auth/invalid-credential'].includes(code)) {
+    return 'Email ou mot de passe incorrect.';
+  }
+  if (code === 'auth/too-many-requests') return 'Trop de tentatives. Réessayez plus tard.';
+  if (code === 'auth/network-request-failed') return 'Connexion impossible. Vérifiez votre réseau.';
+  return error instanceof Error ? error.message : 'Connexion impossible.';
+}
+
 async function adminLogin() {
-  const user = document.getElementById('admin-user').value.trim();
-  const pass = document.getElementById('admin-pass').value.trim();
-  if (!user || !pass) {
-    alert('Veuillez renseigner l’identifiant et le mot de passe.');
+  const email = document.getElementById('admin-user').value.trim();
+  const pass = document.getElementById('admin-pass').value;
+  if (!email || !pass) {
+    alert('Veuillez renseigner l’email et le mot de passe.');
+    return;
+  }
+  if (!FIREBASE_STATE.auth) {
+    alert('Service d’authentification indisponible. Réessayez dans un instant.');
     return;
   }
 
   try {
-    await loginAdminOnServer(user, pass);
+    // La session est ensuite gérée par onAuthStateChanged (voir initApp).
+    await FIREBASE_STATE.auth.signInWithEmailAndPassword(email, pass);
+    document.getElementById('admin-pass').value = '';
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Identifiants invalides.';
-    alert(message);
-    return;
+    alert(authErrorMessage(error));
   }
-
-  sessionStorage.setItem('faspagnes_admin', '1');
-  await showAdminDashboard();
 }
 
 async function adminLogout() {
-  sessionStorage.removeItem('faspagnes_admin');
-  await logoutAdminOnServer();
+  if (FIREBASE_STATE.auth) {
+    await FIREBASE_STATE.auth.signOut().catch(() => {});
+  }
   showAdminLogin();
 }
 
@@ -997,8 +1085,32 @@ function showSection(id) {
   if (id === 'boutique') renderProducts('all');
   if (id === 'order') refreshOrderSelect(document.getElementById('order-pagne')?.value);
   if (id === 'admin') {
-    if (sessionStorage.getItem('faspagnes_admin') === '1') void showAdminDashboard();
+    if (isAdminAuthenticated()) void showAdminDashboard();
     else showAdminLogin();
+  }
+}
+
+// Écoute temps réel des commandes : activée seulement quand l'admin est connecté
+// (les règles Firestore interdisent la lecture des commandes au public).
+function subscribeOrders() {
+  if (UNSUBSCRIBE_ORDERS || !isAdminAuthenticated()) return;
+  const col = ordersCollection();
+  if (!col) return;
+  UNSUBSCRIBE_ORDERS = col.onSnapshot(snap => {
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    APP_STATE.orders = items.sort((a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    saveLocalOrders(APP_STATE.orders);
+    refreshCustomersFromOrders();
+    renderAdminOrders();
+    renderAdminCustomers();
+  }, err => console.warn('[Firebase] Écoute commandes :', err));
+}
+
+function unsubscribeOrders() {
+  if (UNSUBSCRIBE_ORDERS) {
+    UNSUBSCRIBE_ORDERS();
+    UNSUBSCRIBE_ORDERS = null;
   }
 }
 
@@ -1022,32 +1134,38 @@ async function initApp() {
   renderAdminOrders();
   renderAdminCustomers();
 
-  // Écoute en temps réel Firestore : mise à jour automatique dès qu'un produit change
-  if (FIREBASE_STATE.enabled && FIREBASE_STATE.db) {
-    FIREBASE_STATE.db.collection('fasopagnes').doc('products')
-      .onSnapshot(snap => {
-        const items = Array.isArray(snap?.data()?.items) ? snap.data().items : [];
-        if (items.length) {
-          APP_STATE.products = items;
-          saveLocalProducts(items);
-          renderProducts();
-          renderHomeProducts();
-          refreshOrderSelect();
-        }
-      });
-    FIREBASE_STATE.db.collection('fasopagnes').doc('orders')
-      .onSnapshot(snap => {
-        const items = Array.isArray(snap?.data()?.items) ? snap.data().items : [];
-        APP_STATE.orders = items;
-        saveLocalOrders(items);
-        refreshCustomersFromOrders();
-        renderAdminOrders();
-        renderAdminCustomers();
-      });
+  // Écoute temps réel des produits (lecture publique) : maj auto dès qu'un pagne change.
+  const prodCol = productsCollection();
+  if (prodCol) {
+    prodCol.onSnapshot(snap => {
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (items.length) {
+        APP_STATE.products = sortByCreatedDesc(items);
+        saveLocalProducts(APP_STATE.products);
+        renderProducts();
+        renderHomeProducts();
+        refreshOrderSelect(document.getElementById('order-pagne')?.value);
+      }
+    }, err => console.warn('[Firebase] Écoute produits :', err));
   }
 
-  if (sessionStorage.getItem('faspagnes_admin') === '1') await showAdminDashboard();
-  else showAdminLogin();
+  // État d'authentification : pilote l'affichage admin et l'écoute des commandes.
+  if (FIREBASE_STATE.auth) {
+    FIREBASE_STATE.auth.onAuthStateChanged(async user => {
+      if (user) {
+        await migrateLegacyData().catch(e => console.warn('[Migration] :', e));
+        subscribeOrders();
+        await showAdminDashboard();
+      } else {
+        unsubscribeOrders();
+        APP_STATE.orders = [];
+        showAdminLogin();
+      }
+    });
+  } else {
+    showAdminLogin();
+  }
+
   bindProductImageDropzone();
 }
 
