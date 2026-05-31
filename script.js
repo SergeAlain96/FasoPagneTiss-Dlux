@@ -4,6 +4,7 @@ const ORDER_EMAIL = 'contact@fasopagnes.bf';
 const SELLER_WHATSAPP = '22663240663';
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'Faso2026!';
+const IMGBB_API_KEY = '3693b780e2a691fdbad5f3bda9fcf716';
 const FIREBASE_CONFIG = globalThis.FASOPAGNES_FIREBASE_CONFIG || null;
 const APP_STATE = {
   products: [],
@@ -13,6 +14,7 @@ const APP_STATE = {
 const FIREBASE_STATE = {
   enabled: false,
   db: null,
+  storage: null,
 };
 let LAST_UPLOADED_IMAGE_URL = '';
 let CURRENT_PRODUCT_IMAGE_URL = '';
@@ -81,6 +83,17 @@ async function initFirebase() {
   }
 
   FIREBASE_STATE.db = globalThis.firebase.firestore();
+
+  // Init Firebase Storage
+  if (globalThis.firebase.storage) {
+    try {
+      FIREBASE_STATE.storage = globalThis.firebase.storage();
+      console.log('[Firebase] ✓ Storage connecté');
+    } catch (e) {
+      console.warn('[Firebase] Storage non disponible :', e);
+    }
+  }
+
   FIREBASE_STATE.enabled = true;
   console.log('[Firebase] ✓ Connected to Firestore');
 }
@@ -135,17 +148,29 @@ function readImageAsDataUrl(file) {
 async function uploadImageFile(file) {
   if (!file) throw new Error('Aucun fichier sélectionné.');
   if (!file.type?.startsWith('image/')) throw new Error('Veuillez sélectionner une image valide.');
-  if (file.size > 8 * 1024 * 1024) throw new Error('Image trop lourde. Taille maximale : 8 MB.');
+  if (file.size > 32 * 1024 * 1024) throw new Error('Image trop lourde. Taille maximale : 32 MB.');
 
-  const cleanName = String(file.name || 'image.jpg').replace(/[^a-zA-Z0-9._-]/g, '_');
-
-  if (FIREBASE_STATE.storage) {
-    const storageRef = FIREBASE_STATE.storage.ref().child(`products/${Date.now()}-${cleanName}`);
-    const snapshot = await storageRef.put(file, { contentType: file.type || 'image/jpeg' });
-    return snapshot.ref.getDownloadURL();
+  if (!IMGBB_API_KEY) {
+    throw new Error('Clé API ImgBB manquante. Définissez IMGBB_API_KEY en haut de script.js.');
   }
 
-  return readImageAsDataUrl(file);
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Échec de l'upload (HTTP ${response.status}).`);
+  }
+
+  const result = await response.json();
+  if (!result?.success || !result?.data?.url) {
+    throw new Error(result?.error?.message || 'Échec de l\'upload sur ImgBB.');
+  }
+  return result.data.url;
 }
 
 function bindImageUploadSection() {
@@ -436,6 +461,7 @@ function refreshOrderSelect(selectedId) {
 
 function refreshAll() {
   renderProducts();
+  renderHomeProducts();
   renderAdminProducts();
   renderAdminOrders();
   refreshOrderSelect(document.getElementById('order-pagne')?.value);
@@ -461,6 +487,48 @@ function renderProducts(filter = 'all') {
       </div>
     </div>
   `).join('');
+}
+
+function renderHomeProducts() {
+  const grid = document.getElementById('home-products-grid');
+  if (!grid) return;
+
+  const products = getProducts();
+
+  // Afficher un message si aucun produit Firebase (ignorer les DEFAULT_PRODUCTS)
+  if (!products.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-light);">
+        <p>Aucun produit disponible pour le moment.<br>Revenez bientôt !</p>
+      </div>`;
+    return;
+  }
+
+  // Afficher les 4 premiers produits (les plus récents en premier)
+  const latest = [...products].slice(0, 4);
+
+  grid.innerHTML = latest.map((p, i) => {
+    const badge = i === 0 ? '<span class="product-badge">Nouveau</span>' : '';
+    // Ignorer les images base64 (corrompues / trop lourdes)
+    const imgUrl = p.image && !p.image.startsWith('data:') ? p.image : '';
+    const imgStyle = imgUrl ? `background-image:url('${imgUrl}')` : 'background:#e9edf3';
+    return `
+      <div class="product-card">
+        <div class="product-img" style="${imgStyle}">
+          ${badge}
+        </div>
+        <div class="product-info">
+          <div class="product-name">${escapeHtml(p.name)}</div>
+          <div class="product-desc">${escapeHtml(p.desc)}</div>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">${escapeHtml(p.price)} <small>FCFA</small></div>
+          <button class="btn-add" type="button" onclick="chooseOrderProduct('${p.id}')">
+            <i class="bi bi-whatsapp" aria-hidden="true"></i> Commander
+          </button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function filterProducts(btn, cat) {
@@ -899,6 +967,28 @@ function switchAdminTab(tab) {
   }
 }
 
+/* ── Menu hamburger mobile ── */
+function toggleMenu() {
+  const links = document.getElementById('nav-links');
+  const burger = document.getElementById('nav-hamburger');
+  if (!links || !burger) return;
+  links.classList.toggle('open');
+  burger.classList.toggle('open');
+}
+
+function closeMenu() {
+  const links = document.getElementById('nav-links');
+  const burger = document.getElementById('nav-hamburger');
+  if (links) links.classList.remove('open');
+  if (burger) burger.classList.remove('open');
+}
+
+// Fermer le menu si on clique en dehors
+document.addEventListener('click', (e) => {
+  const nav = document.querySelector('nav');
+  if (nav && !nav.contains(e.target)) closeMenu();
+});
+
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const section = document.getElementById(id);
@@ -915,16 +1005,47 @@ function showSection(id) {
 async function initApp() {
   await initFirebase();
   bindImageUploadSection();
-  saveLocalProducts(loadLocalProducts());
-  saveLocalOrders(loadLocalOrders());
+
+  // Affichage immédiat depuis le localStorage (pas d'attente)
+  const localProds = loadLocalProducts();
+  APP_STATE.products = localProds.length ? localProds : [];
+  renderHomeProducts();
+
+  // Ensuite chargement complet depuis Firebase
   await loadProductsFromApi();
   await loadOrdersFromApi();
   refreshCustomersFromOrders();
   refreshOrderSelect();
   renderProducts();
+  renderHomeProducts(); // re-render avec les données Firebase
   renderAdminProducts();
   renderAdminOrders();
   renderAdminCustomers();
+
+  // Écoute en temps réel Firestore : mise à jour automatique dès qu'un produit change
+  if (FIREBASE_STATE.enabled && FIREBASE_STATE.db) {
+    FIREBASE_STATE.db.collection('fasopagnes').doc('products')
+      .onSnapshot(snap => {
+        const items = Array.isArray(snap?.data()?.items) ? snap.data().items : [];
+        if (items.length) {
+          APP_STATE.products = items;
+          saveLocalProducts(items);
+          renderProducts();
+          renderHomeProducts();
+          refreshOrderSelect();
+        }
+      });
+    FIREBASE_STATE.db.collection('fasopagnes').doc('orders')
+      .onSnapshot(snap => {
+        const items = Array.isArray(snap?.data()?.items) ? snap.data().items : [];
+        APP_STATE.orders = items;
+        saveLocalOrders(items);
+        refreshCustomersFromOrders();
+        renderAdminOrders();
+        renderAdminCustomers();
+      });
+  }
+
   if (sessionStorage.getItem('faspagnes_admin') === '1') await showAdminDashboard();
   else showAdminLogin();
   bindProductImageDropzone();

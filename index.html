@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-storage-compat.js"></script>
   <script>
     globalThis.FASOPAGNES_FIREBASE_CONFIG = {
       apiKey: 'AIzaSyBDR4L0O7VEi0GIISLDicnGLgdNgBkHWJo',
@@ -32,14 +33,27 @@
 
 <nav>
   <div class="logo"><img src="logo.png" alt="FasoPagnes Tissé D'lux" class="logo-img"></div>
-  <div class="nav-links">
-    <button type="button" onclick="showSection('home')">Accueil</button>
-    <button type="button" onclick="showSection('boutique')">Boutique</button>
-    <button type="button" onclick="showSection('about')">À Propos</button>
-    <button type="button" onclick="showSection('contact')">Contact</button>
-    <button type="button" onclick="showSection('order')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
+
+  <!-- Menu links -->
+  <div class="nav-links" id="nav-links">
+    <button type="button" onclick="showSection('home'); closeMenu()">Accueil</button>
+    <button type="button" onclick="showSection('boutique'); closeMenu()">Boutique</button>
+    <button type="button" onclick="showSection('about'); closeMenu()">À Propos</button>
+    <button type="button" onclick="showSection('contact'); closeMenu()">Contact</button>
+    <button type="button" onclick="showSection('order'); closeMenu()"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
+    <!-- Lien admin visible uniquement dans le menu mobile -->
+    <button type="button" class="nav-admin-mobile" onclick="showSection('admin'); closeMenu()">Se connecter</button>
   </div>
+
+  <!-- Bouton Se connecter (desktop uniquement) -->
   <button class="nav-cta" type="button" onclick="showSection('admin')">Se connecter</button>
+
+  <!-- Hamburger (mobile uniquement) -->
+  <button class="nav-hamburger" id="nav-hamburger" type="button" aria-label="Menu" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
 <section id="home" class="section active">
@@ -71,44 +85,14 @@
     <div class="gold-line"></div>
     <p>Les pagnes les plus appréciés de notre collection</p>
   </div>
-  <div class="products-grid" style="background:var(--sable);">
-    <div class="product-card">
-      <div class="product-img" style="background-image:url('PagneTisse1.jpg')">
-        <span class="product-badge">Nouveau</span>
-      </div>
-      <div class="product-info">
-        <div class="product-name">Pagne Tissé Bogolan</div>
-        <div class="product-desc">Tissage traditionnel aux motifs géométriques. Colorants naturels, 100% coton.</div>
-      </div>
-      <div class="product-footer">
-        <div class="product-price">15 000 <small>FCFA</small></div>
-        <button class="btn-add" type="button" onclick="chooseOrderProductByName('Pagne Bogolan Premium')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
-      </div>
+  <div id="home-products-grid" class="products-grid" style="background:var(--sable);">
+    <!-- Produits chargés dynamiquement depuis Firebase -->
+    <div class="home-loading" style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-light);">
+      <p>Chargement des produits...</p>
     </div>
-    <div class="product-card">
-      <div class="product-img" style="background-image:url('PagneTisse2.jpg')">
-        <span class="product-badge" style="background:var(--ocre);">Populaire</span>
-      </div>
-      <div class="product-info">
-        <div class="product-name">Batik Tremblant Premium</div>
-        <div class="product-desc">Batik authentique aux motifs vibrants. Idéal pour cérémonies et tenues de fête.</div>
-      </div>
-      <div class="product-footer">
-        <div class="product-price">8 500 <small>FCFA</small></div>
-        <button class="btn-add" type="button" onclick="chooseOrderProductByName('Batik Tremblant')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
-      </div>
-    </div>
-    <div class="product-card">
-      <div class="product-img" style="background-image:url('PagneTisse3.jpg')"></div>
-      <div class="product-info">
-        <div class="product-name">Kokodonda Riche Brodé</div>
-        <div class="product-desc">Kokodonda de qualité supérieure avec finitions soignées et teinture éclatante.</div>
-      </div>
-      <div class="product-footer">
-        <div class="product-price">22 000 <small>FCFA</small></div>
-        <button class="btn-add" type="button" onclick="chooseOrderProductByName('Kokodonda Doré Brodé')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
-      </div>
-    </div>
+  </div>
+  <div style="background:var(--sable); text-align:center; padding-bottom:2rem;">
+    <button class="btn-primary" type="button" onclick="showSection('boutique')">Voir toute la collection</button>
   </div>
 
   <div style="background:var(--marron); padding:3rem 2rem; text-align:center;">
@@ -309,7 +293,7 @@
 
     <div>
       <div id="admin-products-panel" class="dashboard-card">
-        <div class="admin-toolbar"><button type="button" onclick="openProductForm()">+ Nouveau pagne</button><button type="button" onclick="seedDefaults()">Réinitialiser</button></div>
+        <div class="admin-toolbar"><button type="button" onclick="openProductForm()">+ Nouveau pagne</button></div>
         <h3>Gestion des pagnes</h3>
         <div class="table-wrap">
           <table class="admin-table">
