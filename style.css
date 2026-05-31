@@ -337,7 +337,7 @@ nav {
   transition: transform 0.3s ease, border-color 0.3s ease;
 }
 .value-card:hover { transform: translateY(-4px); border-color: rgba(201,162,39,0.5); }
-.value-icon { font-size: 2.1rem; margin-bottom: 1rem; display: block; }
+.value-icon { font-size: 2.1rem; margin-bottom: 1rem; display: block; color: var(--or-light); line-height: 1; }
 .value-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--or-light); margin-bottom: 0.6rem; }
 .value-desc { font-size: 0.84rem; color: var(--ivoire-3); line-height: 1.7; }
 
@@ -446,6 +446,7 @@ nav {
   background: var(--noir-2); font-weight: 500; transition: all 0.25s;
 }
 .payment-pill:hover { border-color: var(--or); color: var(--or-light); }
+.payment-pill i { color: var(--or-light); margin-right: 0.45rem; }
 
 /* ── Cartes génériques (commande visiteur, admin) ────────── */
 .order-form-wrap { max-width: 1000px; margin: 2.5rem auto 0; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem; }

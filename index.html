@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -164,10 +164,10 @@
   <div class="values-section">
     <div class="sec-title"><h2>Nos valeurs</h2><div class="gold-line"></div></div>
     <div class="values-grid">
-      <div class="value-card"><span class="value-icon">🧵</span><div class="value-title">Authenticité</div><div class="value-desc">Chaque pagne est tissé selon les techniques traditionnelles ancestrales du Burkina Faso.</div></div>
-      <div class="value-card"><span class="value-icon">🤝</span><div class="value-title">Artisans locaux</div><div class="value-desc">Nous soutenons directement les tisserands burkinabè et leurs familles.</div></div>
-      <div class="value-card"><span class="value-icon">✨</span><div class="value-title">Qualité D'lux</div><div class="value-desc">Une sélection rigoureuse garantissant les meilleurs matériaux et finitions.</div></div>
-      <div class="value-card"><span class="value-icon">🌍</span><div class="value-title">Faso d'abord</div><div class="value-desc">Valoriser et exporter le patrimoine culturel textile du Burkina Faso.</div></div>
+      <div class="value-card"><span class="value-icon"><i class="bi bi-patch-check" aria-hidden="true"></i></span><div class="value-title">Authenticité</div><div class="value-desc">Chaque pagne est tissé selon les techniques traditionnelles ancestrales du Burkina Faso.</div></div>
+      <div class="value-card"><span class="value-icon"><i class="bi bi-people" aria-hidden="true"></i></span><div class="value-title">Artisans locaux</div><div class="value-desc">Nous soutenons directement les tisserands burkinabè et leurs familles.</div></div>
+      <div class="value-card"><span class="value-icon"><i class="bi bi-gem" aria-hidden="true"></i></span><div class="value-title">Qualité D'lux</div><div class="value-desc">Une sélection rigoureuse garantissant les meilleurs matériaux et finitions.</div></div>
+      <div class="value-card"><span class="value-icon"><i class="bi bi-globe-americas" aria-hidden="true"></i></span><div class="value-title">Faso d'abord</div><div class="value-desc">Valoriser et exporter le patrimoine culturel textile du Burkina Faso.</div></div>
     </div>
   </div>
   <footer><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
@@ -233,7 +233,6 @@
           <div class="form-group"><label for="order-qty">Quantité</label><input id="order-qty" type="number" min="1" value="1"></div>
         </div>
 
-        <div class="form-group"><label for="order-status">Statut</label><select id="order-status" disabled><option>en attente</option></select><div class="field-hint">Le statut initial est toujours en attente.</div></div>
         <div class="form-group"><label for="order-note">Message / précision</label><textarea id="order-note" placeholder="Précisez la couleur, la taille ou l'adresse de livraison..."></textarea></div>
 
         <div class="form-actions">
@@ -247,14 +246,14 @@
     <div class="payment-section">
       <h3>Moyens de paiement acceptés</h3>
       <div class="payment-methods">
-        <div class="payment-pill">🌍 Western Union</div>
-        <div class="payment-pill">🌍 RIA</div>
-        <div class="payment-pill">🌍 MoneyGram</div>
-        <div class="payment-pill">⚡ Express</div>
-        <div class="payment-pill">💙 Wave</div>
-        <div class="payment-pill">📱 Moov</div>
-        <div class="payment-pill">📱 Orange Money</div>
-        <div class="payment-pill">📲 Tous les Mobile Money</div>
+        <div class="payment-pill"><i class="bi bi-globe2" aria-hidden="true"></i> Western Union</div>
+        <div class="payment-pill"><i class="bi bi-globe2" aria-hidden="true"></i> RIA</div>
+        <div class="payment-pill"><i class="bi bi-globe2" aria-hidden="true"></i> MoneyGram</div>
+        <div class="payment-pill"><i class="bi bi-lightning-charge" aria-hidden="true"></i> Express</div>
+        <div class="payment-pill"><i class="bi bi-phone" aria-hidden="true"></i> Wave</div>
+        <div class="payment-pill"><i class="bi bi-phone" aria-hidden="true"></i> Moov</div>
+        <div class="payment-pill"><i class="bi bi-phone" aria-hidden="true"></i> Orange Money</div>
+        <div class="payment-pill"><i class="bi bi-wallet2" aria-hidden="true"></i> Tous les Mobile Money</div>
       </div>
     </div>
 
@@ -267,73 +266,6 @@
   <footer style="margin-top:3rem;"><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
 </section>
 
-<section id="admin" class="section">
-  <div class="page-header">
-    <h2>Administration</h2>
-    <div class="gold-line"></div>
-    <p>Connexion administrateur et gestion complète des pagnes et commandes</p>
-  </div>
-
-  <div id="admin-login-view" class="admin-login-grid">
-    <div class="login-box">
-      <h3>Connexion admin</h3>
-      <p class="mini-note">Accès réservé à l’administrateur pour gérer les pagnes et les commandes.</p>
-      <div class="form-group" style="margin-top:1rem;"><label for="admin-user">Email</label><input id="admin-user" type="email" autocomplete="username" placeholder="admin@fasopagnes.bf"></div>
-      <div class="form-group"><label for="admin-pass">Mot de passe</label><input id="admin-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-      <div class="form-actions"><button class="btn-primary" type="button" onclick="adminLogin()">Se connecter</button></div>
-    </div>
-  </div>
-
-  <div id="admin-dashboard-view" class="admin-layout hidden">
-    <aside class="admin-sidebar">
-      <h3>Dashboard</h3>
-      <p class="mini-note" style="color:rgba(255,255,255,0.75);"> Gestion des Pagnes & Gestion des commandes.</p>
-      <div class="admin-menu">
-        <button type="button" class="active" onclick="switchAdminTab('products')">Pagnes</button>
-        <button type="button" onclick="switchAdminTab('orders')">Commandes</button>
-        <button type="button" onclick="switchAdminTab('customers')">Clients</button>
-      </div>
-      <div style="margin-top:1rem;"><button class="admin-link" type="button" onclick="adminLogout()">Déconnexion</button></div>
-    </aside>
-
-    <div>
-      <div id="admin-products-panel" class="dashboard-card">
-        <div class="admin-toolbar"><button type="button" onclick="openProductForm()">+ Nouveau pagne</button></div>
-        <h3>Gestion des pagnes</h3>
-        <div class="table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Image</th><th>Nom</th><th>Type</th><th>Prix</th><th>Description</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="admin-products-table"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="admin-orders-panel" class="dashboard-card hidden" style="margin-top:1.2rem;">
-        <h3>Gestion des commandes</h3>
-        <div class="table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Client</th><th>Pagne / Qté</th><th>Statut</th><th>Date</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="admin-orders-table"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="admin-customers-panel" class="dashboard-card hidden" style="margin-top:1.2rem;">
-        <div class="admin-toolbar"><button type="button" onclick="exportCustomersCsv()">Exporter CSV</button></div>
-        <h3>Fiches clients</h3>
-        <div class="table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Nom</th><th>Téléphone</th><th>Commandes</th><th>Première commande</th><th>Dernière commande</th></tr>
-            </thead>
-            <tbody id="admin-customers-table"></tbody>
-          </table>
-        </div>
-      </div>
 
       <div id="product-form-panel" class="dashboard-card hidden" style="margin-top:1.2rem;">
         <h3 id="product-form-title">Nouveau pagne</h3>

@@ -1,6 +1,5 @@
 const STORAGE_PRODUCTS = 'faspagnes_products_v2';
 const STORAGE_ORDERS = 'faspagnes_orders_v2';
-const ORDER_EMAIL = 'contact@fasopagnes.bf';
 const SELLER_WHATSAPP = '22663240663';
 const IMGBB_API_KEY = '3693b780e2a691fdbad5f3bda9fcf716';
 const FIREBASE_CONFIG = globalThis.FASOPAGNES_FIREBASE_CONFIG || null;
@@ -606,39 +605,6 @@ function chooseOrderProduct(productId) {
   showSection('order');
 }
 
-function chooseOrderProductByName(productName) {
-  const product = getProducts().find(p => p.name === productName);
-  if (product) {
-    chooseOrderProduct(product.id);
-    return;
-  }
-  const message = `Bonjour, je souhaite commander : ${productName}`;
-  const url = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank', 'noopener');
-}
-
-function getProductPublicImageUrl(product) {
-  if (!product?.image) return '';
-  if (String(product.image).startsWith('data:')) return '';
-  try {
-    return new URL(product.image, globalThis.location.href).href;
-  } catch {
-    return '';
-  }
-}
-
-function buildWhatsAppOrderMessage(product) {
-  const lines = [
-    `Bonjour, je souhaite commander : ${product.name}`,
-    `Type : ${typeLabel(product.type)}`,
-  ];
-  const imageUrl = getProductPublicImageUrl(product);
-  if (imageUrl) {
-    lines.push(`Photo : ${imageUrl}`);
-  }
-  return lines.join('\n');
-}
-
 async function submitVisitorOrder() {
   const name = document.getElementById('order-client-name').value.trim();
   const phone = document.getElementById('order-client-phone').value.trim();
@@ -679,37 +645,6 @@ async function submitVisitorOrder() {
 
   alert('Commande enregistrée. Vous pouvez maintenant l’envoyer via WhatsApp.');
   prefillOrderWhatsApp(order);
-}
-
-function prefillOrderEmail(orderInput) {
-  const name = document.getElementById('order-client-name')?.value.trim() || '';
-  const phone = document.getElementById('order-client-phone')?.value.trim() || '';
-  const productId = document.getElementById('order-pagne')?.value || '';
-  const qty = document.getElementById('order-qty')?.value || '1';
-  const note = document.getElementById('order-note')?.value.trim() || '';
-  const product = getProducts().find(p => p.id === productId);
-  const order = orderInput || {
-    clientName: name,
-    clientPhone: phone,
-    items: [{ name: product?.name || '', type: product?.type || '', qty, price: product?.price || '' }],
-    note,
-    status: 'en attente',
-  };
-
-  const orderLabel = order.items.map(i => i.name + ' (' + typeLabel(i.type) + ') x' + i.qty).join(', ');
-
-  const body = [
-    'Nouvelle commande FasoPagnes',
-    `Client : ${order.clientName}`,
-    `Téléphone : ${order.clientPhone}`,
-    'Pagne : ' + orderLabel,
-    `Statut : ${order.status}`,
-    order.note ? `Note : ${order.note}` : '',
-  ].filter(Boolean).join('\n');
-
-  const subject = encodeURIComponent('Commande FasoPagnes Tissé D\'lux');
-  const mailBody = encodeURIComponent(body);
-  globalThis.location.href = `mailto:${ORDER_EMAIL}?subject=${subject}&body=${mailBody}`;
 }
 
 function prefillOrderWhatsApp(orderInput) {
