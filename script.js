@@ -566,7 +566,7 @@ function renderHomeProducts() {
     const badge = i === 0 ? '<span class="product-badge">Nouveau</span>' : '';
     // Ignorer les images base64 (corrompues / trop lourdes)
     const imgUrl = p.image && !p.image.startsWith('data:') ? p.image : '';
-    const imgStyle = imgUrl ? `background-image:url('${imgUrl}')` : 'background:#e9edf3';
+    const imgStyle = imgUrl ? `background-image:url('${imgUrl}')` : 'background:var(--noir-3)';
     return `
       <div class="product-card">
         <div class="product-img" style="${imgStyle}">
