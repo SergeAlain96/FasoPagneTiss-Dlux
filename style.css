@@ -401,14 +401,6 @@ nav {
 .hours-row { font-size: 0.85rem; }
 .hours-row span { color: var(--or-light); }
 
-.map-placeholder {
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(212,168,71,0.3);
-  border-radius: 2px; padding: 2rem; margin-top: 2rem;
-  text-align: center; font-size: 0.85rem;
-  color: rgba(255,255,255,0.92);
-}
-
 .whatsapp-btn {
   display: flex; align-items: center; gap: 0.5rem;
   background: var(--ocre); color: white; border: none;
@@ -1029,4 +1021,116 @@ footer strong { color: var(--or-light); }
     align-items: center;
     justify-content: center;
   }
+}
+
+/* ============================================================
+   AMÉLIORATIONS UX — WhatsApp flottant, carte, animations, skeletons
+   ============================================================ */
+
+/* ── Bouton WhatsApp flottant (toutes les sections) ── */
+.wa-float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 200;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #25D366;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.85rem 1.1rem;
+  border-radius: 999px;
+  font-size: 1.4rem;
+  line-height: 1;
+  box-shadow: 0 8px 22px rgba(37,211,102,0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: waPulse 2.4s ease-in-out infinite;
+}
+.wa-float:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 12px 28px rgba(37,211,102,0.55);
+  color: #fff;
+}
+.wa-float-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+@keyframes waPulse {
+  0%, 100% { box-shadow: 0 8px 22px rgba(37,211,102,0.45); }
+  50% { box-shadow: 0 8px 22px rgba(37,211,102,0.45), 0 0 0 12px rgba(37,211,102,0); }
+}
+@media (max-width: 768px) {
+  .wa-float { right: 16px; bottom: 16px; padding: 0.8rem; font-size: 1.5rem; }
+  .wa-float-label { display: none; } /* icône seule sur mobile */
+}
+@media (hover: none) {
+  .wa-float { animation: none; }
+}
+
+/* ── Carte Google Maps intégrée ── */
+.map-embed {
+  margin-top: 2rem;
+  border: 1px solid rgba(212,168,71,0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  line-height: 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.map-embed iframe {
+  width: 100%;
+  height: 260px;
+  border: 0;
+  display: block;
+}
+
+/* ── Transition d'apparition des sections ── */
+.section.active { animation: sectionFade 0.45s ease both; }
+@keyframes sectionFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Apparition progressive des cartes produit + zoom au survol ── */
+.product-card { animation: cardRise 0.5s ease both; }
+.products-grid .product-card:nth-child(2) { animation-delay: 0.05s; }
+.products-grid .product-card:nth-child(3) { animation-delay: 0.10s; }
+.products-grid .product-card:nth-child(4) { animation-delay: 0.15s; }
+.products-grid .product-card:nth-child(5) { animation-delay: 0.20s; }
+.products-grid .product-card:nth-child(6) { animation-delay: 0.25s; }
+@keyframes cardRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.product-img { transition: transform 0.4s ease, filter 0.2s ease; }
+.product-card:hover .product-img { transform: scale(1.06); }
+
+/* ── Squelettes de chargement ── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e3e8ef;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+  animation: shimmer 1.3s infinite;
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+.skeleton-line {
+  height: 0.7rem;
+  border-radius: 4px;
+  margin: 0.45rem 0;
+}
+.skeleton-card { animation: none; pointer-events: none; }
+
+/* ── Respect des préférences "mouvement réduit" ── */
+@media (prefers-reduced-motion: reduce) {
+  .section.active, .product-card, .wa-float, .logo-img, .logo-hero-img, .about-logo-img { animation: none; }
+  .product-card:hover .product-img { transform: none; }
 }

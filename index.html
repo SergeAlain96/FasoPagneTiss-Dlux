@@ -183,7 +183,11 @@
       <div class="contact-item"><div class="contact-label">Appel</div><div class="contact-value"><a href="tel:+22666746967">+226 66 74 69 67</a></div></div>
       <div class="contact-item"><div class="contact-label">Email</div><div class="contact-value"><a href="mailto:contact@fasopagnes.bf">contact@fasopagnes.bf</a></div></div>
       <div class="contact-item"><div class="contact-label">Horaires d'ouverture</div><div class="hours-grid"><div class="hours-row"><span>Lun – Ven</span></div><div class="hours-row">08h00 – 19h00</div><div class="hours-row"><span>Samedi</span></div><div class="hours-row">09h00 – 19h00</div></div></div>
-      <div class="map-placeholder">📍 Dassasgho · Ouagadougou<br><small>Intégrer Google Maps ici</small></div>
+      <div class="map-embed">
+        <iframe title="Carte — FasoPagnes Tissé D'lux à Dassasgho, Ouagadougou"
+          src="https://www.google.com/maps?q=Dassasgho,+Ouagadougou,+Burkina+Faso&output=embed"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
       <button class="whatsapp-btn" type="button" onclick="window.open('https://wa.me/22663240663','_blank')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander via WhatsApp</button>
     </div>
     <div class="contact-form">
@@ -192,7 +196,7 @@
       <div class="form-group"><label for="contact-phone">Téléphone / WhatsApp</label><input id="contact-phone" type="tel" placeholder="+226 ..."></div>
       <div class="form-group"><label for="contact-subject">Sujet</label><select id="contact-subject"><option>Renseignement sur un produit</option><option>Passer une commande</option><option>Livraison</option><option>Commande sur mesure</option><option>Autre</option></select></div>
       <div class="form-group"><label for="contact-message">Votre message</label><textarea id="contact-message" placeholder="Décrivez votre demande..."></textarea></div>
-      <button class="btn-submit" type="button">Envoyer le message</button>
+      <button class="btn-submit" type="button" onclick="submitContactForm()">Envoyer le message</button>
     </div>
   </div>
   <footer><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
@@ -390,6 +394,12 @@
   </div>
   <footer><strong>FasoPagnes Tissé D'lux</strong> — Espace admin Firestore</footer>
 </section>
+
+<!-- Bouton WhatsApp flottant (visible sur toutes les sections) -->
+<a class="wa-float" href="https://wa.me/22663240663" target="_blank" rel="noopener" aria-label="Commander via WhatsApp">
+  <i class="bi bi-whatsapp" aria-hidden="true"></i>
+  <span class="wa-float-label">Commander</span>
+</a>
 
 </body>
 </html>

@@ -741,6 +741,50 @@ function prefillOrderWhatsApp(orderInput) {
   globalThis.open(url, '_blank', 'noopener');
 }
 
+function submitContactForm() {
+  const name = document.getElementById('contact-name')?.value.trim() || '';
+  const phone = document.getElementById('contact-phone')?.value.trim() || '';
+  const subject = document.getElementById('contact-subject')?.value || '';
+  const message = document.getElementById('contact-message')?.value.trim() || '';
+
+  if (!name || !message) {
+    alert('Veuillez indiquer au moins votre nom et votre message.');
+    return;
+  }
+
+  const lines = [
+    'Bonjour, je vous contacte depuis le site FasoPagnes.',
+    `Nom : ${name}`,
+    phone ? `Téléphone : ${phone}` : '',
+    subject ? `Sujet : ${subject}` : '',
+    '',
+    message,
+  ].filter(Boolean);
+
+  const url = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`;
+  globalThis.open(url, '_blank', 'noopener');
+}
+
+// Squelettes de chargement affichés tant que les produits ne sont pas chargés
+function renderProductsSkeleton(gridId, count = 4) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = Array.from({ length: count }, () => `
+    <div class="product-card skeleton-card" aria-hidden="true">
+      <div class="product-img skeleton"></div>
+      <div class="product-info">
+        <div class="skeleton skeleton-line" style="width:70%"></div>
+        <div class="skeleton skeleton-line" style="width:95%"></div>
+        <div class="skeleton skeleton-line" style="width:55%"></div>
+      </div>
+      <div class="product-footer">
+        <div class="skeleton skeleton-line" style="width:40%; height:1.1rem;"></div>
+        <div class="skeleton skeleton-line" style="width:30%; height:1.6rem;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderAdminProducts() {
   const tbody = document.getElementById('admin-products-table');
   if (!tbody) return;
@@ -1115,6 +1159,10 @@ function unsubscribeOrders() {
 }
 
 async function initApp() {
+  // Squelettes de chargement immédiats (avant même Firebase)
+  renderProductsSkeleton('home-products-grid', 4);
+  renderProductsSkeleton('products-grid', 8);
+
   await initFirebase();
   bindImageUploadSection();
 
