@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FasoPagnes Tissé D'lux</title>
+  <meta name="description" content="FasoPagnes Tissé D'lux : pagnes tissés authentiques du Burkina Faso. Commande rapide via WhatsApp à Ouagadougou et partout au Burkina.">
+  <meta property="og:title" content="FasoPagnes Tissé D'lux">
+  <meta property="og:description" content="Pagnes tissés authentiques du Burkina Faso. Commandez facilement via WhatsApp.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="logo.png">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script>
+    globalThis.FASOPAGNES_FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyBDR4L0O7VEi0GIISLDicnGLgdNgBkHWJo',
+      authDomain: 'fasopagnes-b3408.firebaseapp.com',
+      projectId: 'fasopagnes-b3408',
+      storageBucket: 'fasopagnes-b3408.firebasestorage.app',
+      messagingSenderId: '340319422156',
+      appId: '1:340319422156:web:f1aa7e2f4d2a685753e469',
+      measurementId: 'G-7S6B9KD9LC',
+    };
+  </script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><img src="logo.png" alt="FasoPagnes Tissé D'lux" class="logo-img"></div>
+  <div class="nav-links">
+    <button type="button" onclick="showSection('home')">Accueil</button>
+    <button type="button" onclick="showSection('boutique')">Boutique</button>
+    <button type="button" onclick="showSection('about')">À Propos</button>
+    <button type="button" onclick="showSection('contact')">Contact</button>
+    <button type="button" onclick="showSection('order')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
+  </div>
+  <button class="nav-cta" type="button" onclick="showSection('admin')">Se connecter</button>
+</nav>
+
+<section id="home" class="section active">
+  <div class="hero">
+    <div class="weave-bg"></div>
+    <div class="hero-content">
+      <span class="hero-tag">Ouagadougou · Burkina Faso</span>
+      <h1>Pagnes Tissés<br><em>D'exception</em></h1>
+      <p class="hero-sub">Des tissus authentiques du Burkina Faso, tissés avec passion selon les traditions ancestrales. Chaque pagne raconte une histoire.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" type="button" onclick="showSection('boutique')">Découvrir la boutique</button>
+        <button class="btn-outline" type="button" onclick="showSection('order')">Comment commander</button>
+      </div>
+      <div class="hero-stats">
+        <div><span class="stat-num">200+</span><span class="stat-lbl">Modèles disponibles</span></div>
+        <div><span class="stat-num">100%</span><span class="stat-lbl">Tissu authentique</span></div>
+        <div><span class="stat-num">5★</span><span class="stat-lbl">Satisfaction client</span></div>
+      </div>
+    </div>
+    <div class="hero-decor">
+      <div class="brand-logo-hero">
+        <img src="logo.png" alt="FasoPagnes Tissé D'lux" class="logo-hero-img">
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title" style="background:var(--sable); padding-top:3rem;">
+    <h2>Nouveautés & Coups de Cœur</h2>
+    <div class="gold-line"></div>
+    <p>Les pagnes les plus appréciés de notre collection</p>
+  </div>
+  <div class="products-grid" style="background:var(--sable);">
+    <div class="product-card">
+      <div class="product-img" style="background-image:url('PagneTisse1.jpg')">
+        <span class="product-badge">Nouveau</span>
+      </div>
+      <div class="product-info">
+        <div class="product-name">Pagne Tissé Bogolan</div>
+        <div class="product-desc">Tissage traditionnel aux motifs géométriques. Colorants naturels, 100% coton.</div>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">15 000 <small>FCFA</small></div>
+        <button class="btn-add" type="button" onclick="chooseOrderProductByName('Pagne Bogolan Premium')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background-image:url('PagneTisse2.jpg')">
+        <span class="product-badge" style="background:var(--ocre);">Populaire</span>
+      </div>
+      <div class="product-info">
+        <div class="product-name">Batik Tremblant Premium</div>
+        <div class="product-desc">Batik authentique aux motifs vibrants. Idéal pour cérémonies et tenues de fête.</div>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">8 500 <small>FCFA</small></div>
+        <button class="btn-add" type="button" onclick="chooseOrderProductByName('Batik Tremblant')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background-image:url('PagneTisse3.jpg')"></div>
+      <div class="product-info">
+        <div class="product-name">Kokodonda Riche Brodé</div>
+        <div class="product-desc">Kokodonda de qualité supérieure avec finitions soignées et teinture éclatante.</div>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">22 000 <small>FCFA</small></div>
+        <button class="btn-add" type="button" onclick="chooseOrderProductByName('Kokodonda Doré Brodé')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--marron); padding:3rem 2rem; text-align:center;">
+    <h2 style="font-family:'Playfair Display',serif; color:var(--creme); font-size:1.6rem;">Ce que disent nos clients</h2>
+    <div class="gold-line"></div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1.5rem; max-width:900px; margin:2rem auto 0;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(212,168,71,0.2); padding:1.8rem; border-radius:2px;">
+        <p style="color:var(--or-light); font-size:1.2rem; margin-bottom:0.5rem;">★★★★★</p>
+        <p style="font-style:italic; color:rgba(253,246,227,0.75); font-size:0.9rem; line-height:1.7;">"Les plus beaux pagnes que j'ai trouvés à Ouagadougou. La qualité est exceptionnelle !"</p>
+        <p style="color:var(--or-light); font-size:0.8rem; margin-top:1rem; letter-spacing:0.05em;">— Aminata K., Ouagadougou</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(212,168,71,0.2); padding:1.8rem; border-radius:2px;">
+        <p style="color:var(--or-light); font-size:1.2rem; margin-bottom:0.5rem;">★★★★★</p>
+        <p style="font-style:italic; color:rgba(253,246,227,0.75); font-size:0.9rem; line-height:1.7;">"Livraison rapide, tissu magnifique. Je commande uniquement ici maintenant !"</p>
+        <p style="color:var(--or-light); font-size:0.8rem; margin-top:1rem; letter-spacing:0.05em;">— Ibrahim T., Bobo-Dioulasso</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(212,168,71,0.2); padding:1.8rem; border-radius:2px;">
+        <p style="color:var(--or-light); font-size:1.2rem; margin-bottom:0.5rem;">★★★★★</p>
+        <p style="font-style:italic; color:rgba(253,246,227,0.75); font-size:0.9rem; line-height:1.7;">"Service client au top, les pagnes sont authentiques et les prix très raisonnables."</p>
+        <p style="color:var(--or-light); font-size:0.8rem; margin-top:1rem; letter-spacing:0.05em;">— Fatoumata D., Koudougou</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel<br>
+    Burkina Faso · Tissage authentique depuis 2015
+  </footer>
+</section>
+
+<section id="boutique" class="section">
+  <div class="page-header">
+    <h2>Notre Boutique</h2>
+    <div class="gold-line"></div>
+    <p>Sélection de pagnes tissés, batiks, kokodonda, bogolla et galani du Burkina Faso</p>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" type="button" onclick="filterProducts(this, 'all')">Tout voir</button>
+    <button class="filter-btn" type="button" onclick="filterProducts(this, 'tisse')">Pagnes Tissés</button>
+    <button class="filter-btn" type="button" onclick="filterProducts(this, 'batiks')">Batiks</button>
+    <button class="filter-btn" type="button" onclick="filterProducts(this, 'kokodonda')">Kokodonda</button>
+    <button class="filter-btn" type="button" onclick="filterProducts(this, 'bogolla')">Bogolla</button>
+    <button class="filter-btn" type="button" onclick="filterProducts(this, 'galani')">Galani</button>
+    <button class="filter-btn" type="button" onclick="filterProducts(this, 'accessoire')">Accessoires</button>
+  </div>
+
+  <div class="products-grid" id="products-grid"></div>
+  <footer><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
+</section>
+
+<section id="about" class="section">
+  <div style="background:var(--marron);">
+    <div class="about-hero">
+      <div class="about-visual">
+          <div class="about-logo-frame">
+            <img src="logo.png" alt="FasoPagnes Tissé D'lux" class="about-logo-img">
+          </div>
+      </div>
+      <div class="about-text">
+        <h2>Notre <em>histoire</em></h2>
+        <p>FasoPagnes Tissé D'lux est née d'une passion pour le patrimoine textile burkinabè. Fondée à Ouagadougou, dans le quartier de Dassasgho, notre boutique valorise le savoir-faire des tisserands traditionnels du Faso.</p>
+        <p>Chaque pagne que nous proposons est sélectionné avec soin, témoignant de l'excellence artisanale du Burkina Faso. Nous travaillons directement avec des artisans locaux pour garantir l'authenticité et la qualité de chaque pièce.</p>
+        <p>Notre mission : rendre accessible la beauté du tissu burkinabè, de Ouagadougou aux quatre coins du monde.</p>
+      </div>
+    </div>
+  </div>
+  <div class="values-section">
+    <div class="sec-title"><h2>Nos valeurs</h2><div class="gold-line"></div></div>
+    <div class="values-grid">
+      <div class="value-card"><span class="value-icon">🧵</span><div class="value-title">Authenticité</div><div class="value-desc">Chaque pagne est tissé selon les techniques traditionnelles ancestrales du Burkina Faso.</div></div>
+      <div class="value-card"><span class="value-icon">🤝</span><div class="value-title">Artisans locaux</div><div class="value-desc">Nous soutenons directement les tisserands burkinabè et leurs familles.</div></div>
+      <div class="value-card"><span class="value-icon">✨</span><div class="value-title">Qualité D'lux</div><div class="value-desc">Une sélection rigoureuse garantissant les meilleurs matériaux et finitions.</div></div>
+      <div class="value-card"><span class="value-icon">🌍</span><div class="value-title">Faso d'abord</div><div class="value-desc">Valoriser et exporter le patrimoine culturel textile du Burkina Faso.</div></div>
+    </div>
+  </div>
+  <footer><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
+</section>
+
+<section id="contact" class="section">
+  <div class="contact-wrap">
+    <div class="contact-info">
+      <h2>Nous trouver</h2>
+      <p>Venez nous rendre visite ou contactez-nous</p>
+      <div class="contact-item"><div class="contact-label">Adresse</div><div class="contact-value">Quartier Dassasgho<br>Près du ROYAL BEACH Hotel<br>Ouagadougou, Burkina Faso</div></div>
+      <div class="contact-item"><div class="contact-label">WhatsApp</div><div class="contact-value"><ul class="phone-list"><li><a href="https://wa.me/22663240663">+226 63 24 06 63</a></li><li><a href="https://wa.me/22652832424">+226 52 83 24 24</a></li></ul></div></div>
+      <div class="contact-item"><div class="contact-label">Appel</div><div class="contact-value"><a href="tel:+22666746967">+226 66 74 69 67</a></div></div>
+      <div class="contact-item"><div class="contact-label">Email</div><div class="contact-value"><a href="mailto:contact@fasopagnes.bf">contact@fasopagnes.bf</a></div></div>
+      <div class="contact-item"><div class="contact-label">Horaires d'ouverture</div><div class="hours-grid"><div class="hours-row"><span>Lun – Ven</span></div><div class="hours-row">08h00 – 19h00</div><div class="hours-row"><span>Samedi</span></div><div class="hours-row">09h00 – 19h00</div></div></div>
+      <div class="map-placeholder">📍 Dassasgho · Ouagadougou<br><small>Intégrer Google Maps ici</small></div>
+      <button class="whatsapp-btn" type="button" onclick="window.open('https://wa.me/22663240663','_blank')"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander via WhatsApp</button>
+    </div>
+    <div class="contact-form">
+      <h3>Envoyer un message</h3>
+      <div class="form-group"><label for="contact-name">Votre nom</label><input id="contact-name" type="text" placeholder="Ex : Aminata Ouédraogo"></div>
+      <div class="form-group"><label for="contact-phone">Téléphone / WhatsApp</label><input id="contact-phone" type="tel" placeholder="+226 ..."></div>
+      <div class="form-group"><label for="contact-subject">Sujet</label><select id="contact-subject"><option>Renseignement sur un produit</option><option>Passer une commande</option><option>Livraison</option><option>Commande sur mesure</option><option>Autre</option></select></div>
+      <div class="form-group"><label for="contact-message">Votre message</label><textarea id="contact-message" placeholder="Décrivez votre demande..."></textarea></div>
+      <button class="btn-submit" type="button">Envoyer le message</button>
+    </div>
+  </div>
+  <footer><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
+</section>
+
+<section id="order" class="section">
+  <div class="page-header">
+    <h2>Comment Commander</h2>
+    <div class="gold-line"></div>
+    <p>Simple, rapide et sécurisé — à Ouagadougou et partout au Burkina</p>
+  </div>
+
+  <div class="order-page">
+    <div class="steps">
+      <div class="step-card"><div class="step-num">1</div><div class="step-content"><h4>Choisissez votre pagne</h4><p>Parcourez notre catalogue en ligne ou venez directement en boutique à Dassasgho. Filtrez par type, couleur ou occasion. Des photos haute qualité vous permettent de voir chaque détail du tissu.</p></div></div>
+      <div class="step-card"><div class="step-num">2</div><div class="step-content"><h4>Contactez-nous</h4><p>Envoyez-nous un message via WhatsApp, par téléphone ou par le formulaire de contact. Précisez le(s) pagne(s) souhaité(s), la quantité et votre localisation pour la livraison.</p></div></div>
+      <div class="step-card"><div class="step-num">3</div><div class="step-content"><h4>Confirmez & Payez</h4><p>Nous vous envoyons la confirmation avec les détails de commande. Paiement possible via Western Union, RIA, MoneyGram, Express, Wave, Moov, Orange Money et autres services Mobile Money.</p></div></div>
+      <div class="step-card"><div class="step-num">4</div><div class="step-content"><h4>Livraison ou retrait</h4><p>Récupérez votre commande en boutique ou faites-vous livrer à domicile à Ouagadougou (24–48h). Livraison dans les autres villes du Burkina disponible sur demande.</p></div></div>
+    </div>
+
+    <div class="order-form-wrap">
+      <div class="order-form-card">
+        <div class="badge-soft">Commande visiteur</div>
+        <h3>Passer une commande rapide</h3>
+        <p class="mini-note">Le visiteur peut commander sans compte. La commande est enregistrée et envoyée rapidement via WhatsApp.</p>
+
+        <div class="grid-2" style="margin-top:1rem;">
+          <div class="form-group"><label for="order-client-name">Nom</label><input id="order-client-name" type="text" placeholder="Votre nom"></div>
+          <div class="form-group"><label for="order-client-phone">Téléphone</label><input id="order-client-phone" type="tel" placeholder="+226 ..."></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group"><label for="order-pagne">Pagne</label><select id="order-pagne"></select></div>
+          <div class="form-group"><label for="order-qty">Quantité</label><input id="order-qty" type="number" min="1" value="1"></div>
+        </div>
+
+        <div class="form-group"><label for="order-status">Statut</label><select id="order-status" disabled><option>en attente</option></select><div class="field-hint">Le statut initial est toujours en attente.</div></div>
+        <div class="form-group"><label for="order-note">Message / précision</label><textarea id="order-note" placeholder="Précisez la couleur, la taille ou l'adresse de livraison..."></textarea></div>
+
+        <div class="form-actions">
+          <button class="btn-primary" type="button" onclick="submitVisitorOrder()">Valider la commande</button>
+          <button class="btn-outline" type="button" style="border-color:var(--ocre); color:var(--ocre);" onclick="prefillOrderWhatsApp()"><i class="bi bi-whatsapp" aria-hidden="true"></i> Commander via WhatsApp</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="payment-section">
+      <h3>Moyens de paiement acceptés</h3>
+      <div class="payment-methods">
+        <div class="payment-pill">🌍 Western Union</div>
+        <div class="payment-pill">🌍 RIA</div>
+        <div class="payment-pill">🌍 MoneyGram</div>
+        <div class="payment-pill">⚡ Express</div>
+        <div class="payment-pill">💙 Wave</div>
+        <div class="payment-pill">📱 Moov</div>
+        <div class="payment-pill">📱 Orange Money</div>
+        <div class="payment-pill">📲 Tous les Mobile Money</div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:2.5rem;">
+      <button class="btn-primary" type="button" onclick="showSection('boutique')">Voir le catalogue</button>
+      &nbsp;
+      <button class="btn-outline" type="button" style="border-color:var(--ocre); color:var(--ocre);" onclick="showSection('contact')">Nous contacter</button>
+    </div>
+  </div>
+  <footer style="margin-top:3rem;"><strong>FasoPagnes Tissé D'lux</strong> — Dassasgho, Ouagadougou, près du ROYAL BEACH Hotel</footer>
+</section>
+
+<section id="admin" class="section">
+  <div class="page-header">
+    <h2>Administration</h2>
+    <div class="gold-line"></div>
+    <p>Connexion administrateur et gestion complète des pagnes et commandes</p>
+  </div>
+
+  <div id="admin-login-view" class="admin-login-grid">
+    <div class="login-box">
+      <h3>Connexion admin</h3>
+      <p class="mini-note">Accès réservé à l’administrateur pour gérer les pagnes et les commandes.</p>
+      <div class="form-group" style="margin-top:1rem;"><label for="admin-user">Identifiant</label><input id="admin-user" type="text" placeholder="admin"></div>
+      <div class="form-group"><label for="admin-pass">Mot de passe</label><input id="admin-pass" type="password" placeholder="••••••••"></div>
+      <div class="form-actions"><button class="btn-primary" type="button" onclick="adminLogin()">Se connecter</button></div>
+    </div>
+  </div>
+
+  <div id="admin-dashboard-view" class="admin-layout hidden">
+    <aside class="admin-sidebar">
+      <h3>Dashboard</h3>
+      <p class="mini-note" style="color:rgba(255,255,255,0.75);"> Gestion des Pagnes & Gestion des commandes.</p>
+      <div class="admin-menu">
+        <button type="button" class="active" onclick="switchAdminTab('products')">Pagnes</button>
+        <button type="button" onclick="switchAdminTab('orders')">Commandes</button>
+        <button type="button" onclick="switchAdminTab('customers')">Clients</button>
+      </div>
+      <div style="margin-top:1rem;"><button class="admin-link" type="button" onclick="adminLogout()">Déconnexion</button></div>
+    </aside>
+
+    <div>
+      <div id="admin-products-panel" class="dashboard-card">
+        <div class="admin-toolbar"><button type="button" onclick="openProductForm()">+ Nouveau pagne</button><button type="button" onclick="seedDefaults()">Réinitialiser</button></div>
+        <h3>Gestion des pagnes</h3>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Image</th><th>Nom</th><th>Type</th><th>Prix</th><th>Description</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="admin-products-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-orders-panel" class="dashboard-card hidden" style="margin-top:1.2rem;">
+        <h3>Gestion des commandes</h3>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Client</th><th>Pagne / Qté</th><th>Statut</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="admin-orders-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-customers-panel" class="dashboard-card hidden" style="margin-top:1.2rem;">
+        <div class="admin-toolbar"><button type="button" onclick="exportCustomersCsv()">Exporter CSV</button></div>
+        <h3>Fiches clients</h3>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Nom</th><th>Téléphone</th><th>Commandes</th><th>Première commande</th><th>Dernière commande</th></tr>
+            </thead>
+            <tbody id="admin-customers-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="product-form-panel" class="dashboard-card hidden" style="margin-top:1.2rem;">
+        <h3 id="product-form-title">Nouveau pagne</h3>
+        <input type="hidden" id="product-edit-index" value="">
+        <div class="grid-2">
+          <div class="form-group"><label for="product-name">Nom</label><input id="product-name" type="text" placeholder="Nom du pagne"></div>
+          <div class="form-group">
+            <label for="product-type">Type</label>
+            <select id="product-type">
+              <option value="tisse">Tissé</option>
+              <option value="batiks">Batiks</option>
+              <option value="kokodonda">Kokodonda</option>
+              <option value="bogolla">Bogolla</option>
+              <option value="galani">Galani</option>
+              <option value="accessoire">Accessoire</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label for="product-price">Prix (FCFA)</label><input id="product-price" type="text" placeholder="15 000"></div>
+          <div class="form-group">
+            <label for="product-image-preview">Aperçu de l’image</label>
+            <div id="product-image-dropzone" class="image-dropzone">
+              <img id="product-image-preview" class="image-preview hidden" alt="Aperçu du pagne">
+              <div class="dropzone-text">
+                <strong>Aperçu de l’image</strong>
+                <span>L’image du produit s’affiche ici</span>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:0.75rem;">
+              <div class="form-group">
+                <label for="product-upload-file">Fichier image</label>
+                <input id="product-upload-file" type="file" accept="image/*">
+              </div>
+              <div class="form-group">
+                <label for="product-upload-url">Lien généré</label>
+                <input id="product-upload-url" type="text" readonly placeholder="Le lien apparaîtra ici après l’upload">
+              </div>
+            </div>
+            <div class="image-dropzone upload-preview" id="product-upload-preview" style="margin-top:0.5rem;">
+              <img id="product-upload-preview-img" class="image-preview hidden" alt="Aperçu à envoyer">
+              <div class="dropzone-text">
+                <strong>Aucune image sélectionnée</strong>
+                <span>Le fichier choisi apparaîtra ici</span>
+              </div>
+            </div>
+            <div class="form-actions" style="margin-top:0.75rem;">
+              <button class="btn-primary" type="button" onclick="uploadSelectedProductImage()">Uploader l’image</button>
+              <button class="btn-secondary" type="button" onclick="copyUploadedImageUrl()">Copier le lien</button>
+            </div>
+            <div class="field-hint" id="product-upload-status">Sélectionnez un fichier puis lancez l’upload.</div>
+          </div>
+        </div>
+        <div class="form-group"><label for="product-desc">Description</label><textarea id="product-desc" placeholder="Description du pagne"></textarea></div>
+        <div class="form-actions"><button class="btn-primary" type="button" onclick="saveProduct()">Enregistrer</button><button class="btn-secondary" type="button" onclick="closeProductForm()">Annuler</button></div>
+      </div>
+    </div>
+  </div>
+  <footer><strong>FasoPagnes Tissé D'lux</strong> — Espace admin Firestore</footer>
+</section>
+
+</body>
+</html>
