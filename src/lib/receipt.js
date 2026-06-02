@@ -1,16 +1,18 @@
-import { jsPDF } from 'jspdf';
 import { BRAND, EMAIL } from '../constants/theme';
 
-/* ── Couleurs du site ── */
-const NAVY   = [13, 27, 62];     // #0D1B3E
-const BLUE   = [0, 82, 204];     // #0052CC
-const BLUE_L = [219, 234, 254];  // bleu pâle
-const GOLD   = [180, 83, 9];     // amber-600
-const GRAY   = [100, 116, 139];
-const INK    = [15, 23, 42];
-const SOFT   = [241, 245, 249];
+/* ── Couleurs (logo) ── */
+const NAVY = [13, 27, 62];
+const BLUE = [0, 82, 204];
+const GOLD = [176, 124, 38];
+const INK  = [33, 37, 49];
+const GRAY = [122, 130, 144];
+const LINE = [222, 224, 232];
+const BG   = [244, 245, 249];   // gris clair
+const WHITE = [255, 255, 255];
 
-/* ── Cache du logo en dataURL ── */
+const CONTACT_PHONE = '+226 63 24 06 63';
+
+/* ── Cache logo ── */
 let LOGO_CACHE = null;
 function loadLogo() {
   if (LOGO_CACHE !== null) return Promise.resolve(LOGO_CACHE);
@@ -25,233 +27,202 @@ function loadLogo() {
     .catch(() => { LOGO_CACHE = ''; return ''; });
 }
 
-/** "18 000" → 18000 */
-function parsePrice(p) {
-  const n = Number(String(p).replace(/[^0-9]/g, ''));
-  return Number.isFinite(n) ? n : 0;
-}
-/** 18000 → "18 000" */
-function fmt(n) {
-  return n.toLocaleString('fr-FR');
-}
+const parsePrice = (p) => { const n = Number(String(p).replace(/[^0-9]/g, '')); return Number.isFinite(n) ? n : 0; };
+// Séparateur de milliers = espace ASCII normale (jsPDF ne rend pas l'espace insécable U+202F de toLocaleString)
+const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
 /**
- * Génère le reçu PDF (style facture, couleurs du site). Async (charge le logo).
+ * Reçu PDF — style facture épurée (inspiré modèle pro), couleurs du site.
  * @returns {Promise<jsPDF>}
  */
 export async function buildReceipt(order) {
-  const logo = await loadLogo();
+  const [{ jsPDF }, logo] = await Promise.all([import('jspdf'), loadLogo()]);
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const W = 210, H = 297, M = 16;
+  const W = 210, H = 297, M = 20;
+  const colR = W - M;
 
-  /* ════════ HEADER ════════ */
-  // Bande blanche en haut, bloc navy arrondi à droite
-  doc.setFillColor(...NAVY);
-  doc.roundedRect(86, 12, W - 86 - M, 26, 4, 4, 'F');
-  // Cercles décoratifs (bleu) dans le bloc navy
-  doc.setFillColor(...BLUE);
-  doc.circle(W - M - 8, 17, 5, 'F');
-  doc.setFillColor(40, 70, 140);
-  doc.circle(W - M - 16, 33, 3.5, 'F');
+  /* ════════ FOND gris clair ════════ */
+  doc.setFillColor(...BG);
+  doc.rect(0, 0, W, H, 'F');
 
-  // Titre REÇU
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(24);
-  doc.text('REÇU', 96, 29);
-
-  // Logo + nom à gauche
+  /* ════════ EN-TÊTE ════════ */
+  // Logo + marque (gauche)
+  let ly = 24;
   if (logo) {
-    try { doc.addImage(logo, 'PNG', M, 13, 22, 22); } catch { /* ignore */ }
+    try { doc.addImage(logo, 'PNG', M, ly - 4, 16, 16); } catch { /* ignore */ }
   }
-  doc.setTextColor(...NAVY);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text('FasoPagnes', M + 25, 22);
-  doc.setTextColor(...GOLD);
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(9);
-  doc.text("Tissé D'lux", M + 25, 28);
+  doc.setFontSize(15);
+  doc.setTextColor(...NAVY);
+  doc.text('FasoPagnes', M + 20, ly + 2);
+  doc.setTextColor(...BLUE);
+  doc.setFontSize(11);
+  doc.text("Tissé D'lux.", M + 20, ly + 8);
 
-  /* ════════ INFOS CLIENT + REÇU ════════ */
-  let y = 54;
+  // REÇU (droite)
   doc.setTextColor(...BLUE);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.text('REÇU À :', M, y);
-
+  doc.setFontSize(28);
+  doc.text('REÇU', colR, ly + 2, { align: 'right' });
   doc.setTextColor(...INK);
-  doc.setFontSize(15);
-  doc.text(order.clientName || 'Client', M + 24, y + 0.5);
+  doc.setFontSize(10);
+  doc.text(new Date(order.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }), colR, ly + 9, { align: 'right' });
 
-  doc.setTextColor(...GRAY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  let cy = y + 8;
-  doc.text(`Tél / WhatsApp : ${order.clientPhone || '-'}`, M + 24, cy);
-  if (order.clientEmail) { cy += 5.5; doc.text(order.clientEmail, M + 24, cy); }
-
-  // Bloc droite : N°, date, réf
-  doc.setTextColor(...INK);
+  /* ════════ ADRESSE / CLIENT ════════ */
+  let y = 50;
+  // Boutique (gauche)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  const rx = W - M;
-  doc.text(`Reçu N° : ${order.id.slice(0, 8).toUpperCase()}`, rx, y, { align: 'right' });
+  doc.setTextColor(...INK);
+  doc.text('Boutique', M, y);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...GRAY);
-  doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString('fr-FR')}`, rx, y + 6, { align: 'right' });
-  doc.text(`Statut : En attente`, rx, y + 12, { align: 'right' });
-
-  // Filet bleu séparateur
-  y = 76;
-  doc.setDrawColor(...BLUE);
-  doc.setLineWidth(0.6);
-  doc.line(M, y, W - M, y);
-
-  /* ════════ SIDEBAR GAUCHE (gris) ════════ */
-  const sideX = M, sideW = 52, sideY = y + 8;
-  doc.setFillColor(...SOFT);
-  doc.roundedRect(sideX, sideY, sideW, 96, 3, 3, 'F');
-
-  let sy = sideY + 9;
-  doc.setTextColor(...NAVY);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.text('PAIEMENT', sideX + 5, sy);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(8.5);
-  ['Wave', 'Orange Money', 'Moov Money', 'Western Union', 'Espèces'].forEach((m, i) => {
-    doc.text(m, sideX + 5, sy + 6 + i * 5);
-  });
-
-  sy = sideY + 48;
-  doc.setTextColor(...NAVY);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.text('CONDITIONS', sideX + 5, sy);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(7.8);
-  const terms =
-    'Commande confirmée après validation sur WhatsApp. Livraison à Ouagadougou sous 24 à 48h. ' +
-    'Reçu non contractuel, valable comme récapitulatif de commande.';
-  doc.text(doc.splitTextToSize(terms, sideW - 10), sideX + 5, sy + 6);
-
-  /* ════════ TABLEAU ARTICLES ════════ */
-  const tx = sideX + sideW + 8;        // début table
-  const tw = W - M - tx;               // largeur table
-  let ty = y + 8;
-
-  // En-têtes
-  doc.setTextColor(...NAVY);
-  doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  const colPrix = tx + tw - 56;
-  const colQte  = tx + tw - 30;
-  const colTot  = tx + tw;
-  doc.text('ARTICLE', tx, ty);
-  doc.text('PRIX',  colPrix, ty, { align: 'right' });
-  doc.text('QTÉ',   colQte,  ty, { align: 'right' });
-  doc.text('TOTAL', colTot,  ty, { align: 'right' });
-  ty += 2.5;
-  doc.setDrawColor(...BLUE);
-  doc.setLineWidth(0.5);
-  doc.line(tx, ty, colTot, ty);
-  ty += 7;
+  doc.text('Quartier Dassasgho, près du ROYAL BEACH Hotel', M, y + 6);
+  doc.text('Ouagadougou, Burkina Faso', M, y + 11);
+  doc.text(CONTACT_PHONE, M, y + 16);
 
-  // Lignes
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  let subtotal = 0;
-  (order.items ?? []).forEach((it) => {
-    const unit = parsePrice(it.price);
-    const line = unit * (it.qty || 1);
-    subtotal += line;
-    doc.setTextColor(...INK);
-    doc.text(String(it.name).slice(0, 32), tx, ty);
-    doc.setTextColor(...GRAY);
-    doc.text(`${fmt(unit)}`, colPrix, ty, { align: 'right' });
-    doc.text(String(it.qty), colQte, ty, { align: 'right' });
-    doc.setTextColor(...INK);
-    doc.text(`${fmt(line)}`, colTot, ty, { align: 'right' });
-    ty += 8;
-  });
-
-  /* ════════ TOTAUX ════════ */
-  ty += 2;
-  doc.setDrawColor(220, 224, 230);
-  doc.setLineWidth(0.3);
-  doc.line(colPrix - 6, ty, colTot, ty);
-  ty += 7;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...GRAY);
-  doc.text('SOUS-TOTAL', colQte, ty, { align: 'right' });
-  doc.setTextColor(...INK);
-  doc.text(`${fmt(subtotal)} FCFA`, colTot, ty, { align: 'right' });
-  ty += 9;
-
-  // TOTAL en surbrillance bleu
-  doc.setFillColor(...BLUE_L);
-  doc.roundedRect(colPrix - 6, ty - 6, colTot - colPrix + 6, 11, 2, 2, 'F');
+  // Client (droite)
+  const rx = 120;
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...INK);
+  doc.text('À :', rx, y);
   doc.setFontSize(11);
   doc.setTextColor(...NAVY);
-  doc.text('TOTAL', colQte, ty + 1.5, { align: 'right' });
-  doc.setTextColor(...BLUE);
-  doc.text(`${fmt(subtotal)} FCFA`, colTot, ty + 1.5, { align: 'right' });
+  doc.text(order.clientName || 'Client', rx, y + 7);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...GRAY);
+  doc.setFontSize(9);
+  doc.text(order.clientPhone || '-', rx, y + 13);
+  if (order.clientEmail) doc.text(order.clientEmail, rx, y + 18);
+  // Réf
+  doc.text(`Réf : ${order.id.slice(0, 8).toUpperCase()}`, colR, y, { align: 'right' });
 
-  /* ════════ NOTE CLIENT ════════ */
+  /* ════════ TABLEAU ════════ */
+  y = 88;
+  const cPrix = colR - 64, cQte = colR - 34, cTot = colR;
+
+  // Bandeau en-tête bleu plein
+  doc.setFillColor(...BLUE);
+  doc.rect(M, y, colR - M, 11, 'F');
+  doc.setTextColor(...WHITE);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('DÉSIGNATION', M + 4, y + 7);
+  doc.text('PRIX UNIT.', cPrix, y + 7, { align: 'right' });
+  doc.text('QTÉ', cQte, y + 7, { align: 'right' });
+  doc.text('TOTAL', cTot - 4, y + 7, { align: 'right' });
+  y += 11;
+
+  // Lignes
+  let subtotal = 0;
+  doc.setFontSize(10);
+  (order.items ?? []).forEach((it) => {
+    const unit = parsePrice(it.price);
+    const lineTot = unit * (it.qty || 1);
+    subtotal += lineTot;
+
+    y += 9;
+    // Nom article (gras) + catégorie en sous-ligne
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...INK);
+    doc.setFontSize(10);
+    doc.text(String(it.name).slice(0, 38), M + 4, y);
+    if (it.type) {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...GRAY);
+      doc.setFontSize(8);
+      doc.text(`Pagne ${it.type}`, M + 4, y + 4);
+    }
+    // Montants
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...INK);
+    doc.setFontSize(9.5);
+    doc.text(`${fmt(unit)}`, cPrix, y, { align: 'right' });
+    doc.text(String(it.qty), cQte, y, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${fmt(lineTot)}`, cTot - 4, y, { align: 'right' });
+
+    y += 7;
+    doc.setDrawColor(...LINE);
+    doc.setLineWidth(0.3);
+    doc.line(M, y, colR, y);
+  });
+
+  /* ════════ TOTAUX (droite) ════════ */
+  y += 12;
+  const boxX = colR - 92, boxW = 92;       // bloc large
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...GRAY);
+  doc.text('SOUS-TOTAL', boxX + 6, y);
+  doc.setTextColor(...INK);
+  doc.text(`${fmt(subtotal)} FCFA`, colR - 6, y, { align: 'right' });
+
+  // TOTAL À PAYER — bloc bleu plein
+  y += 7;
+  const boxH = 14;
+  doc.setFillColor(...BLUE);
+  doc.rect(boxX, y, boxW, boxH, 'F');
+  doc.setTextColor(...WHITE);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('TOTAL À PAYER', boxX + 6, y + 9);
+  doc.setFontSize(11);
+  doc.text(`${fmt(subtotal)} FCFA`, colR - 6, y + 9, { align: 'right' });
+
+  /* ════════ NOTE (gauche, en regard des totaux) ════════ */
   if (order.note) {
-    ty += 16;
-    doc.setTextColor(...GOLD);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
-    doc.text('PRÉCISION', tx, ty);
+    doc.setTextColor(...INK);
+    doc.text('Note :', M, y - 7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     doc.setFontSize(9);
-    doc.text(doc.splitTextToSize(order.note, tw), tx, ty + 5);
+    doc.text(doc.splitTextToSize(order.note, 80), M, y - 2);
   }
 
-  /* ════════ SIGNATURE ════════ */
-  const sigY = 232;
-  doc.setTextColor(...INK);
-  doc.setFont('helvetica', 'italic');
+  /* ════════ MERCI ════════ */
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...BLUE);
   doc.setFontSize(13);
-  doc.text('FasoPagnes', W - M, sigY, { align: 'right' });
-  doc.setDrawColor(...GRAY);
-  doc.setLineWidth(0.3);
-  doc.line(W - M - 45, sigY + 3, W - M, sigY + 3);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...GRAY);
-  doc.text('Service Commande', W - M, sigY + 8, { align: 'right' });
+  doc.text('Merci pour votre confiance.', M, H - 56);
 
-  /* ════════ FOOTER NAVY ════════ */
-  const fy = H - 26;
-  doc.setFillColor(...NAVY);
-  doc.rect(0, fy, W, 26, 'F');
-  // Cercles déco
-  doc.setFillColor(...BLUE);
-  doc.circle(14, fy + 13, 7, 'F');
-  doc.setFillColor(40, 70, 140);
-  doc.circle(W - 12, fy + 6, 5, 'F');
+  /* ════════ PIED — 3 colonnes ════════ */
+  const fy = H - 42;
+  doc.setDrawColor(...LINE);
+  doc.setLineWidth(0.4);
+  doc.line(M, fy, colR, fy);
 
-  doc.setTextColor(255, 255, 255);
+  const col1 = M, col2 = M + 62, col3 = M + 120;
+  const heads = [['Des questions ?', col1], ['Livraison', col2], ['Conditions', col3]];
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text('+226 63 24 06 63', 30, fy + 10);
+  doc.setTextColor(...NAVY);
+  heads.forEach(([t, x]) => doc.text(t, x, fy + 8));
+
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.text(EMAIL, 30, fy + 16);
-  doc.text('Dassasgho, Ouagadougou, Burkina Faso', 30, fy + 21);
+  doc.setFontSize(8);
+  doc.setTextColor(...GRAY);
+  // Col 1
+  doc.text(`WhatsApp : ${CONTACT_PHONE}`, col1, fy + 14);
+  doc.text(EMAIL, col1, fy + 18.5);
+  // Col 2
+  doc.text('Ouagadougou : 24 à 48h.', col2, fy + 14);
+  doc.text('Retrait boutique à Dassasgho.', col2, fy + 18.5);
+  // Col 3
+  doc.text(doc.splitTextToSize('Commande confirmée après validation WhatsApp. Reçu récapitulatif.', 56), col3, fy + 14);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(245, 200, 70);
-  doc.text('Merci pour votre confiance !', W - 22, fy + 15, { align: 'right' });
+  // Triptyque couleur logo
+  const dotY = H - 12, dot = 1.3;
+  doc.setFillColor(196, 30, 30); doc.circle(M, dotY, dot, 'F');
+  doc.setFillColor(...BLUE);     doc.circle(M + 5, dotY, dot, 'F');
+  doc.setFillColor(...GOLD);     doc.circle(M + 10, dotY, dot, 'F');
+  doc.setTextColor(...GRAY);
+  doc.setFontSize(7.5);
+  doc.text(BRAND, colR, dotY + 1, { align: 'right' });
 
   return doc;
 }
@@ -262,7 +233,7 @@ export async function downloadReceipt(order) {
   doc.save(`recu-fasopagnes-${order.id.slice(0, 8)}.pdf`);
 }
 
-/** Ouvre le client mail pré-rempli (récap texte) */
+/** Mailto pré-rempli (récap texte) */
 export function emailReceipt(order) {
   const lines = (order.items ?? []).map(i => `${i.name} x${i.qty} — ${i.price} FCFA`).join('\n');
   const subject = `Reçu commande FasoPagnes ${order.id.slice(0, 8).toUpperCase()}`;
@@ -278,7 +249,7 @@ export function emailReceipt(order) {
     'Reçu PDF téléchargeable depuis le site.',
     '',
     BRAND,
-    'WhatsApp : +226 63 24 06 63',
+    `WhatsApp : ${CONTACT_PHONE}`,
   ].filter(Boolean).join('\n');
   return `mailto:${order.clientEmail || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

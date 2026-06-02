@@ -36,7 +36,7 @@ const STATS = [
   { value: '2015', label: 'Depuis' },
 ];
 
-const GALLERY = ['/PagneTisse2.jpg', '/PagneTisse3.jpg', '/PagneTisse4.jpg', '/background.png'];
+const GALLERY = ['/PagneTisse2.jpg', '/PagneTisse3.jpg', '/PagneTisse4.jpg', '/background.jpg'];
 
 /* ══════════════════════════════════════════════════════════════════ */
 export default function HomePage() {
@@ -69,7 +69,7 @@ export default function HomePage() {
 
             {/* Image de fond */}
             <img
-              src="/background.png"
+              src="/background.jpg"
               alt="Pagnes tissés du Burkina Faso"
               className="absolute inset-0 w-full h-full object-cover"
             />

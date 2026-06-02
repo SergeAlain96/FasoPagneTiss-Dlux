@@ -155,7 +155,7 @@ export default function AdminPage() {
       id: existing?.id ?? uid(),
       name: name.trim(), type,
       price: price.trim(), desc: desc.trim(),
-      image: image.trim() || '/background.png',
+      image: image.trim() || '/background.jpg',
       createdAt: existing?.createdAt ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
