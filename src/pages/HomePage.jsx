@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   ArrowRight, MessageCircle, Search, Star,
   ShieldCheck, Truck, CreditCard, Sparkles, Phone,
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import ProductGridSkeleton from '../components/ProductGridSkeleton';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { subscribeProducts } from '../services/firebase';
 import { defaultProducts } from '../data/products';
 import { WHATSAPP, CATEGORIES } from '../constants/theme';
+import { fadeUp, stagger, reveal } from '../lib/motion';
 
 /* ── Données statiques ─────────────────────────────────────────── */
 const BENEFITS = [
@@ -37,14 +40,15 @@ const GALLERY = ['/PagneTisse2.jpg', '/PagneTisse3.jpg', '/PagneTisse4.jpg', '/b
 
 /* ══════════════════════════════════════════════════════════════════ */
 export default function HomePage() {
-  const [products, setProducts] = useState(defaultProducts);
+  const [products, setProducts] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [cat, setCat] = useState('all');
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsub = subscribeProducts(
-      (items) => { if (items.length) setProducts(items); },
-      (err)   => console.warn('[Firebase] produits :', err),
+      (items) => { setProducts(items.length ? items : defaultProducts); setLoaded(true); },
+      (err)   => { console.warn('[Firebase] produits :', err); setProducts(defaultProducts); setLoaded(true); },
     );
     return unsub;
   }, []);
@@ -80,25 +84,30 @@ export default function HomePage() {
             />
 
             {/* Contenu */}
-            <div className="relative z-10 px-6 sm:px-12 lg:px-16 py-12 max-w-2xl">
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-2 mb-7">
+            <motion.div
+              className="relative z-10 px-6 sm:px-12 lg:px-16 py-12 max-w-2xl"
+              variants={stagger}
+              initial="hidden"
+              animate="show"
+            >
+              <motion.div variants={fadeUp} className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-2 mb-7">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#25D366]" />
                 <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-white/85">
                   Ouagadougou · Burkina Faso
                 </span>
-              </div>
+              </motion.div>
 
-              <h1 className="font-serif font-bold text-white leading-[1.05] text-5xl sm:text-6xl lg:text-7xl mb-6">
+              <motion.h1 variants={fadeUp} className="font-serif font-bold text-white leading-[1.05] text-5xl sm:text-6xl lg:text-7xl mb-6">
                 Trouvez Votre<br />
                 <span className="text-amber-400 italic">Pagne Idéal</span>
-              </h1>
+              </motion.h1>
 
-              <p className="text-white/70 text-base sm:text-lg leading-relaxed max-w-md mb-9 font-light">
+              <motion.p variants={fadeUp} className="text-white/70 text-base sm:text-lg leading-relaxed max-w-md mb-9 font-light">
                 Tissus authentiques du Burkina Faso, tissés main selon les traditions.
                 Chaque pagne est une œuvre d'art.
-              </p>
+              </motion.p>
 
-              <div className="flex flex-wrap gap-4">
+              <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
                 <Link
                   to="/boutique"
                   className="inline-flex items-center gap-2.5 rounded-full bg-crimson hover:bg-red-700 text-white font-bold text-[11px] tracking-widest uppercase px-8 py-4 shadow-xl shadow-crimson/30 hover:-translate-y-px transition-all duration-200"
@@ -115,8 +124,8 @@ export default function HomePage() {
                   <MessageCircle size={15} className="text-[#25D366]" />
                   <span>WhatsApp</span>
                 </a>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
 
@@ -182,11 +191,21 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.slice(0, 4).map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          {loaded
+            ? (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+                variants={stagger}
+                {...reveal}
+              >
+                {products.slice(0, 4).map(p => (
+                  <motion.div key={p.id} variants={fadeUp}>
+                    <ProductCard product={p} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )
+            : <ProductGridSkeleton count={4} />}
         </div>
       </section>
 
@@ -197,7 +216,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
 
           {/* Colonne titre */}
-          <div>
+          <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
             <p className="text-brand text-[11px] font-bold tracking-[0.3em] uppercase mb-4">Pourquoi nous choisir</p>
             <h2 className="font-serif font-bold leading-tight text-4xl sm:text-5xl mb-6">
               <span className="text-crimson">L'excellence</span>{' '}
@@ -217,12 +236,12 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Colonne bullets */}
-          <div className="space-y-5">
+          <motion.div className="space-y-5" variants={stagger} {...reveal}>
             {BENEFITS.map(({ Icon, title, text }) => (
-              <div key={title} className="flex gap-5 p-5 rounded-2xl hover:bg-surface transition-colors group">
+              <motion.div key={title} variants={fadeUp} className="flex gap-5 p-5 rounded-2xl hover:bg-surface transition-colors group">
                 <div className="w-12 h-12 rounded-full bg-brand-pale group-hover:bg-brand flex items-center justify-center shrink-0 transition-colors">
                   <Icon size={20} className="text-brand group-hover:text-white transition-colors" />
                 </div>
@@ -230,9 +249,9 @@ export default function HomePage() {
                   <h3 className="font-serif font-bold text-ink text-lg mb-1">{title}</h3>
                   <p className="text-muted text-sm leading-relaxed">{text}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -248,9 +267,9 @@ export default function HomePage() {
             className="mb-14 text-4xl"
           />
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5" variants={stagger} {...reveal}>
             {/* Carte texte navy */}
-            <div className="col-span-2 lg:col-span-1 rounded-2xl bg-navy p-8 flex flex-col justify-between min-h-[260px]">
+            <motion.div variants={fadeUp} className="col-span-2 lg:col-span-1 rounded-2xl bg-navy p-8 flex flex-col justify-between min-h-[260px]">
               <Sparkles size={28} className="text-amber-400" />
               <div>
                 <h3 className="font-serif font-bold text-white text-2xl leading-tight mb-3">
@@ -267,12 +286,13 @@ export default function HomePage() {
                   <ArrowRight size={13} />
                 </Link>
               </div>
-            </div>
+            </motion.div>
 
             {/* Images */}
             {GALLERY.map((src, i) => (
-              <div
+              <motion.div
                 key={src}
+                variants={fadeUp}
                 className={`group relative rounded-2xl overflow-hidden min-h-[260px] ${i === 3 ? 'hidden lg:block' : ''}`}
               >
                 <img
@@ -281,9 +301,9 @@ export default function HomePage() {
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -319,10 +339,11 @@ export default function HomePage() {
             title="Ce que disent nos clients"
             className="mb-14 text-4xl"
           />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={stagger} {...reveal}>
             {REVIEWS.map((r) => (
-              <blockquote
+              <motion.blockquote
                 key={r.author}
+                variants={fadeUp}
                 className="bg-white border border-border rounded-2xl p-8 flex flex-col gap-5 hover:shadow-lg hover:shadow-brand/8 hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="flex gap-1">
@@ -342,9 +363,9 @@ export default function HomePage() {
                     <div className="text-muted text-xs">{r.city}</div>
                   </div>
                 </footer>
-              </blockquote>
+              </motion.blockquote>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 

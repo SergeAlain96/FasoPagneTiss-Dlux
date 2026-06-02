@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { motion } from 'framer-motion';
 import { X, MessageCircle, Loader2, CheckCircle2, Download, Mail } from 'lucide-react';
 import { saveOrder, uid } from '../services/firebase';
 import { categoryLabel, WHATSAPP } from '../constants/theme';
@@ -80,11 +81,19 @@ export default function OrderModal({ product, onClose }) {
   }
 
   const modal = (
-    <div
+    <motion.div
       className="fixed inset-0 z-[100] bg-navy/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
     >
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl shadow-navy/30 overflow-hidden my-auto">
+      <motion.div
+        className="bg-white w-full max-w-md rounded-3xl shadow-2xl shadow-navy/30 overflow-hidden my-auto"
+        initial={{ opacity: 0, scale: 0.94, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      >
 
         {/* ── Header ── */}
         <div className="relative bg-navy px-6 py-5">
@@ -225,8 +234,8 @@ export default function OrderModal({ product, onClose }) {
             </button>
           </form>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 
   return createPortal(modal, document.body);

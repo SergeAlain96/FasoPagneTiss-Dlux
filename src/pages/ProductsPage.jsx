@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PackageSearch } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import ProductGridSkeleton from '../components/ProductGridSkeleton';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { subscribeProducts } from '../services/firebase';
 import { defaultProducts } from '../data/products';
@@ -10,7 +11,8 @@ import { CATEGORIES } from '../constants/theme';
 const VALID_CATS = CATEGORIES.map(c => c.value);
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(defaultProducts);
+  const [products, setProducts] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const urlCat = searchParams.get('cat');
   const cat = VALID_CATS.includes(urlCat) ? urlCat : 'all';
@@ -22,8 +24,8 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const unsub = subscribeProducts(
-      (items) => { if (items.length) setProducts(items); },
-      (err)   => console.warn('[Firebase] produits :', err),
+      (items) => { setProducts(items.length ? items : defaultProducts); setLoaded(true); },
+      (err)   => { console.warn('[Firebase] produits :', err); setProducts(defaultProducts); setLoaded(true); },
     );
     return unsub;
   }, []);
@@ -73,7 +75,9 @@ export default function ProductsPage() {
       {/* ── Grille produits ─────────────────────────────────────── */}
       <div className="bg-surface py-10 min-h-[50vh]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {filtered.length > 0 ? (
+          {!loaded ? (
+            <ProductGridSkeleton count={8} />
+          ) : filtered.length > 0 ? (
             <>
               <p className="text-muted text-xs uppercase tracking-widest font-bold mb-6">
                 {filtered.length} pagne{filtered.length > 1 ? 's' : ''} trouvé{filtered.length > 1 ? 's' : ''}
