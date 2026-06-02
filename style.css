@@ -342,8 +342,8 @@ nav {
 .value-desc { font-size: 0.84rem; color: var(--ivoire-3); line-height: 1.7; }
 
 /* ── Contact ─────────────────────────────────────────────── */
-.contact-wrap { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 72px); }
-.contact-info { background: var(--charbon); padding: 5rem 3.5rem; color: var(--ivoire); }
+.contact-wrap { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+.contact-info { background: var(--charbon); padding: 4rem 3.5rem; color: var(--ivoire); }
 .contact-info h2 { font-size: 2.4rem; margin-bottom: 0.6rem; }
 .contact-info > p { color: var(--or-light); margin-bottom: 3rem; font-size: 0.92rem; }
 .contact-item { margin-bottom: 2.2rem; }
@@ -364,8 +364,16 @@ nav {
 }
 .whatsapp-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
-.contact-form { padding: 5rem 3.5rem; background: var(--noir); }
-.contact-form h3 { font-size: 1.7rem; color: var(--ivoire); margin-bottom: 2.2rem; }
+/* Bloc "Comment Commander" intégré à l'accueil */
+.home-commander { background: var(--noir); border-top: 1px solid var(--ligne); }
+.home-commander .page-header { background: transparent; }
+
+.contact-cta { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 2rem; }
+.contact-cta .btn-primary, .contact-cta .whatsapp-btn { flex: 1 1 180px; margin-top: 0; }
+
+.contact-map { background: var(--charbon); padding: 4rem 3.5rem 4rem 0; display: flex; }
+.contact-map .map-embed { margin-top: 0; width: 100%; height: 100%; }
+.contact-map .map-embed iframe { height: 100%; min-height: 440px; }
 
 .form-group { margin-bottom: 1.3rem; }
 .form-group label {
@@ -661,12 +669,14 @@ footer strong { color: var(--or-light); font-family: 'Playfair Display', serif; 
 @media (max-width: 480px) { .values-grid { grid-template-columns: 1fr; } }
 
 /* ── Contact responsive ──────────────────────────────────── */
-@media (max-width: 1024px) { .contact-wrap { grid-template-columns: 1fr; min-height: auto; } }
+@media (max-width: 1024px) {
+  .contact-wrap { grid-template-columns: 1fr; }
+  .contact-map { padding: 0 3.5rem 3rem; }
+}
 @media (max-width: 768px) {
   .contact-info { padding: 2.5rem 1.3rem; }
-  .contact-info h2 { font-size: 1.7rem; }
-  .contact-form { padding: 2.5rem 1.3rem; }
-  .contact-form h3 { font-size: 1.4rem; }
+  .contact-map { padding: 0 1.3rem 2rem; }
+  .contact-map .map-embed iframe { min-height: 300px; }
   .hours-grid { grid-template-columns: 1fr; }
 }
 

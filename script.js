@@ -594,15 +594,24 @@ function filterProducts(btn, cat) {
 function chooseOrderProduct(productId) {
   const product = getProducts().find(p => p.id === productId);
   if (!product) return;
-  
+
   // Pré-remplir le formulaire de commande avec le produit sélectionné
   const productSelect = document.getElementById('order-pagne');
   if (productSelect) {
     productSelect.value = productId;
   }
-  
-  // Rediriger vers la section de commande
-  showSection('order');
+
+  // Le formulaire de commande est désormais intégré à l'accueil (#commander)
+  goToCommander();
+}
+
+// Affiche l'accueil et fait défiler jusqu'au bloc de commande
+function goToCommander() {
+  showSection('home');
+  const target = document.getElementById('commander');
+  if (target) {
+    requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 }
 
 async function submitVisitorOrder() {
@@ -670,30 +679,6 @@ function prefillOrderWhatsApp(orderInput) {
     order.clientName ? `Nom client : ${order.clientName}` : '',
     order.clientPhone ? `Téléphone : ${order.clientPhone}` : '',
     order.note ? `Précision : ${order.note}` : '',
-  ].filter(Boolean);
-
-  const url = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`;
-  globalThis.open(url, '_blank', 'noopener');
-}
-
-function submitContactForm() {
-  const name = document.getElementById('contact-name')?.value.trim() || '';
-  const phone = document.getElementById('contact-phone')?.value.trim() || '';
-  const subject = document.getElementById('contact-subject')?.value || '';
-  const message = document.getElementById('contact-message')?.value.trim() || '';
-
-  if (!name || !message) {
-    alert('Veuillez indiquer au moins votre nom et votre message.');
-    return;
-  }
-
-  const lines = [
-    'Bonjour, je vous contacte depuis le site FasoPagnes.',
-    `Nom : ${name}`,
-    phone ? `Téléphone : ${phone}` : '',
-    subject ? `Sujet : ${subject}` : '',
-    '',
-    message,
   ].filter(Boolean);
 
   const url = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`;
@@ -1062,7 +1047,7 @@ function showSection(id) {
   if (section) section.classList.add('active');
   window.scrollTo(0, 0);
   if (id === 'boutique') renderProducts('all');
-  if (id === 'order') refreshOrderSelect(document.getElementById('order-pagne')?.value);
+  if (id === 'home') refreshOrderSelect(document.getElementById('order-pagne')?.value);
   if (id === 'admin') {
     if (isAdminAuthenticated()) void showAdminDashboard();
     else showAdminLogin();

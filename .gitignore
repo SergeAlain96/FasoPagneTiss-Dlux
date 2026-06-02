@@ -5,3 +5,13 @@
 Thumbs.db
 .DS_Store
 *.log
+node_modules
+
+# Secrets — clés API (NE PAS commit)
+.env
+.env.local
+.env.*.local
+
+# Build Vite
+dist
+

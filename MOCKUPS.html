@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FasoPagnes - Maquettes React</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, #0052CC 0%, #1E3A8A 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .nav-links a.active {
+            background: #FF0000;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .mockup-section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .mockup-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* ========== PAGE ACCUEIL ========== */
+        .hero {
+            background: linear-gradient(135deg, #FF0000 0%, #0052CC 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-img {
+            background: rgba(0,0,0,0.2);
+            height: 300px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-img {
+            background: linear-gradient(135deg, #ddd 0%, #eee 100%);
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FF0000;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem 1.5rem;
+            border-top: 1px solid #eee;
+            margin-top: 1rem;
+        }
+        
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #0052CC;
+        }
+        
+        .btn {
+            background: #0052CC;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            background: #003D99;
+        }
+        
+        .btn-secondary {
+            background: #FF0000;
+        }
+        
+        .btn-secondary:hover {
+            background: #CC0000;
+        }
+        
+        /* ========== PAGE PRODUITS ========== */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: #0052CC;
+            color: white;
+            border-color: #0052CC;
+        }
+        
+        /* ========== PAGE PANIER ========== */
+        .cart-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .cart-items {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item-img {
+            width: 100px;
+            height: 100px;
+            background: #eee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-item-price {
+            color: #8B4513;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qty-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: fit-content;
+        }
+        
+        .qty-selector button {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .qty-selector input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 0.3rem;
+        }
+        
+        .cart-summary {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        
+        .summary-row.total {
+            border-top: 2px solid #eee;
+            padding-top: 1rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #0052CC;
+        }
+        
+        /* ========== FORMULAIRE ========== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* ========== ADMIN DASHBOARD ========== */
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .admin-tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .admin-tab.active {
+            border-bottom-color: #0052CC;
+            color: #0052CC;
+            font-weight: bold;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #0052CC;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .row-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn-edit {
+            background: #17a2b8;
+        }
+        
+        .btn-edit:hover {
+            background: #138496;
+        }
+        
+        .btn-delete {
+            background: #dc3545;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        
+        /* ========== MODAL ========== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+            
+            .cart-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-buttons {
+                flex-direction: column;
+            }
+            
+            .filter-btn {
+                width: 100%;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🧵 FasoPagnes</div>
+        <ul class="nav-links">
+            <a onclick="showPage('home')" class="nav-link active" href="javascript:void(0)">Accueil</a>
+            <a onclick="showPage('products')" class="nav-link" href="javascript:void(0)">Produits</a>
+            <a onclick="showPage('cart')" class="nav-link" href="javascript:void(0)">Panier</a>
+            <a onclick="showPage('contact')" class="nav-link" href="javascript:void(0)">Contact</a>
+            <a onclick="showPage('admin')" class="nav-link" href="javascript:void(0)">Admin</a>
+        </ul>
+    </nav>
+
+    <!-- ========== PAGE ACCUEIL ========== -->
+    <div id="home" class="mockup-section active">
+        <div class="container">
+            <div class="hero">
+                <h1>Bienvenue chez FasoPagnes</h1>
+                <p>Pagnes traditionnels du Burkina Faso, fabriqués artisanalement</p>
+                <div class="hero-img">🎨 IMAGE BANNIÈRE</div>
+            </div>
+
+            <h2 style="margin-bottom: 2rem;">Produits Populaires</h2>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-img">
+                        👕
+                        <span class="product-badge">Tissé</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Pagne Bogolan Premium</div>
+                        <div class="product-desc">Motifs géométriques traditionnels. Colorants naturels.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">18 000 FCFA</div>
+                        <button class="btn">Commander</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">
+                        👕
+                        <span class="product-badge">Batiks</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Batik Tremblant</div>
+                        <div class="product-desc">Batik tremblant aux couleurs vives, parfait pour des tenues élégantes.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">9 500 FCFA</div>
+                        <button class="btn">Commander</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">
+                        👕
+                        <span class="product-badge">Kokodonda</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Kokodonda Bleu Royal</div>
+                        <div class="product-desc">Kokodonda de qualité supérieure, teinture artisanale durable.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">25 000 FCFA</div>
+                        <button class="btn">Commander</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">
+                        👕
+                        <span class="product-badge">Accessoire</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Écharpe Tissée</div>
+                        <div class="product-desc">Accessoire en tissu tissé, idéal comme cadeau.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">5 000 FCFA</div>
+                        <button class="btn">Commander</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PAGE PRODUITS ========== -->
+    <div id="products" class="mockup-section">
+        <div class="container">
+            <h1>Notre Catalogue</h1>
+
+            <div class="filter-section">
+                <h3 style="margin-bottom: 1rem;">Filtrer par catégorie</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active">Tous</button>
+                    <button class="filter-btn">Tissé</button>
+                    <button class="filter-btn">Batiks</button>
+                    <button class="filter-btn">Kokodonda</button>
+                    <button class="filter-btn">Bogolla</button>
+                    <button class="filter-btn">Galani</button>
+                    <button class="filter-btn">Accessoires</button>
+                </div>
+            </div>
+
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-img">👕 <span class="product-badge">Tissé</span></div>
+                    <div class="product-info">
+                        <div class="product-name">Pagne Faso Dan Fani</div>
+                        <div class="product-desc">Tissé à la main par des artisans de Koudougou.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">12 000 FCFA</div>
+                        <button class="btn">Détails</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">👕 <span class="product-badge">Batiks</span></div>
+                    <div class="product-info">
+                        <div class="product-name">Batik Coton</div>
+                        <div class="product-desc">Batik en coton confortable, idéal pour un usage quotidien.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">8 000 FCFA</div>
+                        <button class="btn">Détails</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">👕 <span class="product-badge">Kokodonda</span></div>
+                    <div class="product-info">
+                        <div class="product-name">Kokodonda Doré Brodé</div>
+                        <div class="product-desc">Kokodonda premium avec finitions raffinées pour grandes occasions.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">30 000 FCFA</div>
+                        <button class="btn">Détails</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">👕 <span class="product-badge">Bogolla</span></div>
+                    <div class="product-info">
+                        <div class="product-name">Bogolla Prestige</div>
+                        <div class="product-desc">Bogolla authentique au style moderne, coupe polyvalente.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">16 000 FCFA</div>
+                        <button class="btn">Détails</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">👕 <span class="product-badge">Galani</span></div>
+                    <div class="product-info">
+                        <div class="product-name">Galani Signature</div>
+                        <div class="product-desc">Galani traditionnel avec motifs élégants et résistants.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">14 000 FCFA</div>
+                        <button class="btn">Détails</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">👕 <span class="product-badge">Accessoire</span></div>
+                    <div class="product-info">
+                        <div class="product-name">Sac Pagne Traditionnel</div>
+                        <div class="product-desc">Sac artisanal fabriqué à partir de pagnes tissés.</div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">8 000 FCFA</div>
+                        <button class="btn">Détails</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PAGE PANIER ========== -->
+    <div id="cart" class="mockup-section">
+        <div class="container">
+            <h1>Votre Panier</h1>
+            <div class="cart-container">
+                <div class="cart-items">
+                    <h2 style="margin-bottom: 1.5rem;">Articles (2)</h2>
+
+                    <div class="cart-item">
+                        <div class="cart-item-img">👕</div>
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">Pagne Bogolan Premium</div>
+                            <div class="cart-item-price">18 000 FCFA</div>
+                            <div class="qty-selector">
+                                <button>-</button>
+                                <input type="number" value="1">
+                                <button>+</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-delete btn-small">Retirer</button>
+                    </div>
+
+                    <div class="cart-item">
+                        <div class="cart-item-img">👕</div>
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">Batik Tremblant</div>
+                            <div class="cart-item-price">9 500 FCFA</div>
+                            <div class="qty-selector">
+                                <button>-</button>
+                                <input type="number" value="1">
+                                <button>+</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-delete btn-small">Retirer</button>
+                    </div>
+                </div>
+
+                <div class="cart-summary">
+                    <h3 style="margin-bottom: 1.5rem;">Résumé</h3>
+                    <div class="summary-row">
+                        <span>Sous-total :</span>
+                        <span>27 500 FCFA</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Frais de port :</span>
+                        <span>2 000 FCFA</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total :</span>
+                        <span>29 500 FCFA</span>
+                    </div>
+
+                    <button class="btn" style="width: 100%; margin-top: 1.5rem; padding: 1rem;">Procéder au paiement</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem; padding: 1rem;">Continuer les achats</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PAGE CONTACT ========== -->
+    <div id="contact" class="mockup-section">
+        <div class="container">
+            <h1>Nous Contacter</h1>
+            <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 600px; margin: 2rem auto;">
+                <form>
+                    <div class="form-group">
+                        <label for="name">Votre Nom</label>
+                        <input type="text" id="name" placeholder="Ex: Jean Dupont">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Téléphone / WhatsApp</label>
+                        <input type="tel" id="phone" placeholder="Ex: +226 66 12 34 56">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Sujet</label>
+                        <input type="text" id="subject" placeholder="Sujet de votre message">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" placeholder="Écrivez votre message ici..."></textarea>
+                    </div>
+
+                    <button class="btn" type="button" style="width: 100%; padding: 1rem;">Envoyer via WhatsApp</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ADMIN DASHBOARD ========== -->
+    <div id="admin" class="mockup-section">
+        <div class="container">
+            <h1>Tableau de Bord Admin</h1>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="font-size: 2.5rem; color: #0052CC; font-weight: bold;">48</div>
+                    <div style="color: #666; margin-top: 0.5rem;">Commandes Total</div>
+                </div>
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="font-size: 2.5rem; color: #FF0000; font-weight: bold;">12</div>
+                    <div style="color: #666; margin-top: 0.5rem;">En Attente</div>
+                </div>
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="font-size: 2.5rem; color: #0052CC; font-weight: bold;">35</div>
+                    <div style="color: #666; margin-top: 0.5rem;">Clients</div>
+                </div>
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="font-size: 2.5rem; color: #FFD700; font-weight: bold;">52</div>
+                    <div style="color: #666; margin-top: 0.5rem;">Produits</div>
+                </div>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active">Commandes</button>
+                <button class="admin-tab">Produits</button>
+                <button class="admin-tab">Clients</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Articles</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Aminata Traoré</strong><br>+226 66 12 34 56</td>
+                            <td>Pagne Bogolan x1<br>Batik Coton x2</td>
+                            <td><span class="status-badge status-pending">En attente</span></td>
+                            <td>2026-06-01</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="btn btn-edit btn-small">Confirmer</button>
+                                    <button class="btn btn-delete btn-small">Supprimer</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ousmane Diallo</strong><br>+226 70 45 67 89</td>
+                            <td>Kokodonda Bleu x1</td>
+                            <td><span class="status-badge status-confirmed">Confirmée</span></td>
+                            <td>2026-05-31</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="btn btn-edit btn-small">Livrer</button>
+                                    <button class="btn btn-delete btn-small">Supprimer</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fatou Sow</strong><br>+226 71 23 45 67</td>
+                            <td>Écharpe Tissée x3</td>
+                            <td><span class="status-badge status-delivered">Livrée</span></td>
+                            <td>2026-05-28</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="btn btn-edit btn-small">Voir</button>
+                                    <button class="btn btn-delete btn-small">Supprimer</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all sections
+            document.querySelectorAll('.mockup-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(pageId).classList.add('active');
+
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

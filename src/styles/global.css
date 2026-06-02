@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* ── Design tokens (palette logo : bleu dominant) ─────────────── */
+@theme {
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+
+  /* Bleu dominant */
+  --color-navy:       #0D1B3E;
+  --color-navy-soft:  #162247;
+  --color-brand:      #0052CC;
+  --color-brand-dark: #003D99;
+  --color-brand-mid:  #0047B3;
+  --color-brand-pale: #EBF2FF;
+
+  /* Accents logo */
+  --color-crimson:    #DC2626;
+  --color-gold:       #B45309;
+  --color-gold-warm:  #F59E0B;
+
+  /* Surfaces & texte */
+  --color-surface:    #F8FAFC;
+  --color-ink:        #0F172A;
+  --color-muted:      #64748B;
+  --color-border:     #E2E8F0;
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-serif);
+    line-height: 1.15;
+  }
+
+  ::selection { background-color: rgba(0,82,204,0.15); }
+
+  a { text-decoration: none; }
+}
