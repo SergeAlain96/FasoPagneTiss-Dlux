@@ -444,6 +444,9 @@ export default function AdminPage() {
                                   {it.name} <span className="text-brand font-bold">×{it.qty}</span>
                                 </div>
                               ))}
+                              {o.paymentLabel && (
+                                <div className="text-[10px] text-muted mt-1">💳 {o.paymentLabel}</div>
+                              )}
                             </Td>
                             <Td>
                               <Badge variant={statusInfo?.variant ?? 'gold'}>

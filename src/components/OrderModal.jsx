@@ -5,6 +5,7 @@ import { X, MessageCircle, Loader2, CheckCircle2, Download, Mail } from 'lucide-
 import { saveOrder, uid } from '../services/firebase';
 import { categoryLabel, WHATSAPP } from '../constants/theme';
 import { downloadReceipt, emailReceipt } from '../lib/receipt';
+import { PAYMENTS, findPayment } from '../data/payments';
 
 /**
  * OrderModal — collecte infos client AVANT WhatsApp.
@@ -12,7 +13,7 @@ import { downloadReceipt, emailReceipt } from '../lib/receipt';
  * Rendu via portal sur document.body pour éviter les bugs de transform parent.
  */
 export default function OrderModal({ product, onClose }) {
-  const [form, setForm]       = useState({ name: '', phone: '', email: '', qty: 1, note: '' });
+  const [form, setForm]       = useState({ name: '', phone: '', email: '', qty: 1, payment: '', note: '' });
   const [sending, setSending] = useState(false);
   const [err, setErr]         = useState('');
   const [order, setOrder]     = useState(null);   // commande confirmée → écran succès
@@ -44,6 +45,7 @@ export default function OrderModal({ product, onClose }) {
       `Nom : ${o.clientName}`,
       `Telephone : ${o.clientPhone}`,
       o.clientEmail ? `Email : ${o.clientEmail}` : '',
+      o.paymentLabel ? `Paiement : ${o.paymentLabel}` : '',
       o.note ? `Precision : ${o.note}` : '',
       `Ref : ${o.id.slice(0, 8).toUpperCase()}`,
     ].filter(Boolean);
@@ -59,11 +61,14 @@ export default function OrderModal({ product, onClose }) {
     setSending(true); setErr('');
 
     const qty = Math.max(1, Number(form.qty) || 1);
+    const pay = findPayment(form.payment);
     const newOrder = {
       id: uid(),
       clientName:  form.name.trim(),
       clientPhone: form.phone.trim(),
       clientEmail: form.email.trim(),
+      paymentId: form.payment || '',
+      paymentLabel: pay?.label || '',
       items: [{ productId: product.id, name: product.name, type: product.type, qty, price }],
       note: form.note.trim(),
       status: 'en attente',
@@ -209,6 +214,21 @@ export default function OrderModal({ product, onClose }) {
                 value={form.email} onChange={(e) => update('email', e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-border text-ink text-sm placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors"
               />
+            </div>
+
+            <div>
+              <label htmlFor="o-pay" className="block text-[10px] font-bold uppercase tracking-widest text-muted mb-1.5">Moyen de paiement souhaité</label>
+              <select
+                id="o-pay"
+                value={form.payment}
+                onChange={(e) => update('payment', e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-ink text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors"
+              >
+                <option value="">— Choisir (facultatif) —</option>
+                {PAYMENTS.map(p => (
+                  <option key={p.id} value={p.id}>{p.label}</option>
+                ))}
+              </select>
             </div>
 
             <div>

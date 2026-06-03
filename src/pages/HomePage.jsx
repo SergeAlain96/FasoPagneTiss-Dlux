@@ -7,9 +7,11 @@ import {
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import ProductGridSkeleton from '../components/ProductGridSkeleton';
+import PaymentModal from '../components/PaymentModal';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { subscribeProducts } from '../services/firebase';
 import { defaultProducts } from '../data/products';
+import { PAYMENTS } from '../data/payments';
 import { WHATSAPP, CATEGORIES } from '../constants/theme';
 import { fadeUp, stagger, reveal } from '../lib/motion';
 
@@ -20,8 +22,6 @@ const BENEFITS = [
   { Icon: CreditCard,  title: 'Paiement flexible',       text: 'Wave, Moov Money, Orange Money, Western Union, RIA, MoneyGram et plus encore.' },
   { Icon: Sparkles,    title: 'Qualité D\'lux',          text: 'Sélection rigoureuse des plus belles pièces : batiks, kokodonda, bogolla, galani.' },
 ];
-
-const PAYMENTS = ['Wave', 'Moov Money', 'Orange Money', 'Western Union', 'RIA', 'MoneyGram', 'Express'];
 
 const REVIEWS = [
   { text: "Les plus beaux pagnes que j'ai trouvés à Ouaga. Qualité exceptionnelle !", author: 'Aminata K.', city: 'Ouagadougou' },
@@ -43,6 +43,7 @@ export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [cat, setCat] = useState('all');
+  const [payOpen, setPayOpen] = useState(null);   // moyen de paiement sélectionné (popup)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -318,16 +319,20 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap gap-2.5 md:justify-end max-w-xl">
             {PAYMENTS.map(p => (
-              <span
-                key={p}
-                className="rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 transition-colors cursor-default"
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPayOpen(p)}
+                className="rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 transition-colors cursor-pointer"
               >
-                {p}
-              </span>
+                {p.label}
+              </button>
             ))}
           </div>
         </div>
       </section>
+
+      {payOpen && <PaymentModal payment={payOpen} onClose={() => setPayOpen(null)} />}
 
       {/* ══════════════════════════════════════════════════════
           TÉMOIGNAGES

@@ -172,16 +172,28 @@ export async function buildReceipt(order) {
   doc.setFontSize(11);
   doc.text(`${fmt(subtotal)} FCFA`, colR - 6, y + 9, { align: 'right' });
 
-  /* ════════ NOTE (gauche, en regard des totaux) ════════ */
+  /* ════════ GAUCHE : paiement + note (en regard des totaux) ════════ */
+  let ly2 = y - 7;
+  if (order.paymentLabel) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...INK);
+    doc.text('Moyen de paiement :', M, ly2);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...BLUE);
+    doc.setFontSize(9.5);
+    doc.text(order.paymentLabel, M, ly2 + 5);
+    ly2 += 13;
+  }
   if (order.note) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(...INK);
-    doc.text('Note :', M, y - 7);
+    doc.text('Note :', M, ly2);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     doc.setFontSize(9);
-    doc.text(doc.splitTextToSize(order.note, 80), M, y - 2);
+    doc.text(doc.splitTextToSize(order.note, 80), M, ly2 + 5);
   }
 
   /* ════════ MERCI ════════ */
